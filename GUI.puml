@@ -1,0 +1,34 @@
+@startuml
+class GUI.InitialPhase.InitAssetNSound {
+}
+class GUI.GameLoopPhase.UpdateRender.LayerWorldObject {
+}
+class GUI.GameLoopPhase.UpdateRender.HybridUI.BuildBar {
+}
+class GUI.InitialPhase.InitMap {
+}
+class GUI.GUIServices.TimeManager {
+}
+class GUI.GameLoopPhase.UpdateRender.HybridUI.StatsBar {
+}
+class GUI.GameLoopPhase.UpdateLogic.StateRuleChecking {
+}
+class GUI.GameLoopPhase.UpdateLogic.UIDataPrep {
+}
+class GUI.GameLoopPhase.UpdateRender.LayerBackground {
+}
+class GUI.InitialPhase.InitDataStructure {
+}
+class GUI.GUIServices.SoundManager {
+}
+class GUI.GameLoopPhase.UpdateLogic.InputSensing {
+}
+class GUI.GUIServices.AssetManager {
+}
+class GUI.InitialPhase.InitUIComponents {
+}
+class GUI.GameLoopPhase.UpdateLogic.SimulationExecution {
+}
+class GUI.GUIServices.MapManager {
+}
+@enduml
