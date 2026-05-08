@@ -27,7 +27,7 @@ public class StatsManagerEnvironmental {
 
         // อนาคต: ถ้ามลพิษทะลุขีดจำกัด (เช่น เกิน 500) อาจจะแจ้งเตือนภัยพิบัติที่นี่
         // if (rawPollutionTotal > 500) {
-        //     System.out.println("⚠️ แจ้งเตือน: มลพิษในเมืองสูงเกินมาตรฐาน!");
+        //     System.out.println("แจ้งเตือน: มลพิษในเมืองสูงเกินมาตรฐาน!");
         // }
     }
 }

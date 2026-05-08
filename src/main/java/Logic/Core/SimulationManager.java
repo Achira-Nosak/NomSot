@@ -6,7 +6,6 @@ import Model.BaseBuilding;
 import Config.Enums.ZoneType;
 import Model.UtilityBuilding;
 
-
 import java.util.Arrays;
 
 public class SimulationManager {
@@ -28,15 +27,13 @@ public class SimulationManager {
     private BaseBuilding[] buildingRefs;
     private ZoneType[] zoneTypes;
     private double[] happinessLevels; // 0-100 happiness for each building
+    private double[] maxResidents;
+    private double[] currentResidents;
 
     public static SimulationManager getInstance() {
         if (instance == null) instance = new SimulationManager();
         return instance;
     }
-
-
-
-
 
     // --------------- Initial ---------------
     private SimulationManager() {
@@ -57,6 +54,8 @@ public class SimulationManager {
         buildingRefs = new BaseBuilding[size];
         zoneTypes = new ZoneType[size];
         happinessLevels = new double[size];
+        maxResidents = new double[size];
+        currentResidents = new double[size];
     }
 
     // --------------- Dynamic Resizing ---------------
@@ -77,16 +76,12 @@ public class SimulationManager {
             buildingRefs = Arrays.copyOf(buildingRefs, currentCapacity);
             zoneTypes = Arrays.copyOf(zoneTypes, currentCapacity); // CHANGED
             happinessLevels = Arrays.copyOf(happinessLevels, currentCapacity);
+            maxResidents = Arrays.copyOf(maxResidents, currentCapacity);
+            currentResidents = Arrays.copyOf(currentResidents, currentCapacity);
 
             System.out.println("Arrays resized to: " + currentCapacity);
         }
     }
-
-
-
-
-
-
 
     // --------------- Register Every Building ---------------
     public void registerBuilding(BaseBuilding b) {
@@ -105,7 +100,8 @@ public class SimulationManager {
         isOperational[index] = true;
         buildingRefs[index] = b;
         happinessLevels[index] = 50.0;
-
+        maxResidents[index] = b.getStats().getMaxResidents();
+        currentResidents[index] = 0;
 
         zoneTypes[index] = b.getZoneType();
 
@@ -117,9 +113,6 @@ public class SimulationManager {
 
         currentCount++;
     }
-
-
-
 
     // --------------- Update Building Data (When Upgrade) ---------------
     public void updateBuildingData(BaseBuilding b) {
@@ -146,12 +139,10 @@ public class SimulationManager {
         taxRevenues[index] = b.getCurrentTax();
         maintenanceCosts[index] = b.getCurrentMaintenance();
         happinessLevels[index] = b.getCurrentHappiness();
+        maxResidents[index] = b.getStats().getMaxResidents();
 
         GridDirtyFlag.getInstance().makeGridDirty();
     }
-
-
-
 
     // --------------- Remove Building ---------------
     public void removeBuilding(int indexToRemove) {
@@ -179,6 +170,8 @@ public class SimulationManager {
             isOperational[indexToRemove] = isOperational[lastIndex];
             zoneTypes[indexToRemove] = zoneTypes[lastIndex]; // CHANGED
             happinessLevels[indexToRemove] = happinessLevels[lastIndex];
+            maxResidents[indexToRemove] = maxResidents[lastIndex];
+            currentResidents[indexToRemove] = currentResidents[lastIndex];
 
             // Move Reference Building
             buildingRefs[indexToRemove] = buildingRefs[lastIndex];
@@ -198,6 +191,8 @@ public class SimulationManager {
         buildingRefs[lastIndex] = null;
         zoneTypes[lastIndex] = ZoneType.UNZONED;
         happinessLevels[lastIndex] = 0;
+        maxResidents[lastIndex] = 0;
+        currentResidents[lastIndex] = 0;
 
         GridDirtyFlag.getInstance().makeGridDirty();
         currentCount--;
@@ -218,16 +213,12 @@ public class SimulationManager {
         System.out.println("⚠️ No building found at [" + gridX + "," + gridY + "] to demolish.");
     }
 
-
-
-
-
     public boolean canConstruct(BaseBuilding b) {
         CityMasterStats stats = CityMasterStats.getInstance();
         // 1. เช็คเงิน
         if (stats.finance.getTreasuryCurrent() < b.getStats().getConstructionCost()) return false;
         // 2. เช็คน้ำ (Terrain)
-         if (TerrainMapManager.getInstance().isWater(b.getGridX(), b.getGridY())) return false;
+        if (TerrainMapManager.getInstance().isWater(b.getGridX(), b.getGridY())) return false;
         // 3. เช็คกำลังการผลิตไฟฟ้าและน้ำที่เหลืออยู่
         double powerSurplus = stats.infrastructure.getPowerSupply() - stats.infrastructure.getPowerDemand();
         double waterSurplus = stats.infrastructure.getWaterSupply() - stats.infrastructure.getWaterDemand();
@@ -246,17 +237,16 @@ public class SimulationManager {
         registerBuilding(b);
     }
 
-
-
-
-
-
-
-
-
     // --------------- Main Update Loop ---------------
 
     public void update() {
+
+        for (int i = 0; i < currentCount; i++) {
+            if (buildingRefs[i] != null) {
+                buildingRefs[i].onTick(GameManager.getInstance().getCurrentTick());
+            }
+        }
+
         // -------------------- Calculate If GridDirty --------------------
         GridDirtyFlag.getInstance().updateIfGridDirty();
 
@@ -267,6 +257,7 @@ public class SimulationManager {
 
         double sumHappiness = 0;
         int activeBuildingCount = 0;
+        double totalMaxPop = 0;
 
         double rawResTax = 0, rawComTax = 0, rawIndTax = 0, rawAgrTax = 0;
         double rawResMaint = 0, rawComMaint = 0, rawIndMaint = 0, rawAgrMaint = 0, rawOtherMaint = 0;
@@ -302,6 +293,7 @@ public class SimulationManager {
                 case RESIDENTIAL_HIGH:
                     rawResTax += baseTax;
                     rawResMaint += baseMaint;
+                    totalMaxPop += maxResidents[i];
                     break;
                 case COMMERCIAL_LOW:
                 case COMMERCIAL_HIGH:
@@ -342,20 +334,12 @@ public class SimulationManager {
                 rawResMaint, rawComMaint, rawIndMaint, rawAgrMaint, rawOtherMaint
         );
 
-        // แผนกที่ 5: ผังเมือง (ความต้องการคนเข้าอยู่ อิงจากความสุข)
-        // StatsManagerZoning.getInstance().processTick(...);
-
+        // แผนกที่ 5: คน (ความต้องการคนเข้าอยู่ อิงจากความสุข)
+        StatsManagerPopulation.getInstance().processTick(totalMaxPop);
 
         // 4. เดินหน้าเวลาไป 1 Tick
         GameManager.getInstance().advanceTick();
     }
-
-
-
-
-
-
-
 
     // --------------- For Building To know its Operational ---------------
     public boolean getIsOperational(int index) {
@@ -365,6 +349,10 @@ public class SimulationManager {
 
     public void setIsOperational(int index, boolean status) {
         if (index >= 0 && index < currentCount) isOperational[index] = status;
+    }
+
+    public double[] getCurrentResidentsArray() {
+        return currentResidents;
     }
 
     // --- Getters for Managers ---

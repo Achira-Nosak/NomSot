@@ -30,10 +30,8 @@ public class GridDirtyFlag {
     public void updateIfGridDirty() {
         if (!this.isGridDirty) return;
 
-        System.out.println("Re-calculating Power and Water Grid...");
-
+        System.out.println("Re-calculating Infrastructure Grids...");
         int mapSize = GameMapManager.getInstance().getMapSize();
-
         powerMap = new boolean[mapSize][mapSize];
         waterMap = new boolean[mapSize][mapSize];
 
@@ -41,72 +39,29 @@ public class GridDirtyFlag {
         BaseBuilding[] buildings = sim.getBuildingRefs();
         int count = sim.getCurrentCount();
 
-        // 1: ระบายสีรัศมี
+        // 1: ให้แต่ละตึก mark ลงในแผนที่เอง
         for (int i = 0; i < count; i++) {
-            BaseBuilding b = buildings[i];
-            if (b == null) continue;
-
-            int bx = b.getGridX();
-            int by = b.getGridY();
-
-
-            if (b instanceof IResourceProducer) {
-                int radius = (int) b.getStats().getServiceRadius();
-                if (b.getStats().getPowerProduction() > 0) paintRadius(powerMap, bx, by, radius, mapSize);
-                if (b.getStats().getWaterProduction() > 0) paintRadius(waterMap, bx, by, radius, mapSize);
-            }
-
-            if (b instanceof IAuraProvider) {
-                IAuraProvider auraBuilding = (IAuraProvider) b;
-                int auraRadius = (int) auraBuilding.getAuraRadius();
-
-                // TODO: เรียกใช้งาน applyAuraToSurroundings() หรือระบายลง Aura Map
-                ((IAuraProvider) b).applyAuraToSurroundings();
+            if (buildings[i] instanceof IResourceProducer) {
+                ((IResourceProducer) buildings[i]).produceResources(powerMap, waterMap);
             }
         }
 
+        // 2: คำนวณออร่าสิ่งแวดล้อม (Pollution, Safety, Healthy)
+        AuraMapManager.getInstance().recalculateAuras();
 
-        // 2: เช็คสถานะตึก (ถ้าขาดน้ำไฟ ให้หยุดทำงาน)
+        // 3: เช็คสถานะการทำงาน (DOD Check)
         for (int i = 0; i < count; i++) {
             BaseBuilding b = buildings[i];
             if (b == null) continue;
 
-            int bx = b.getGridX();
-            int by = b.getGridY();
+            // เช็คว่าตึกมี น้ำ ไฟฟ้า มั้ย
+            boolean hasPower = b.getStats().getPowerConsumption() <= 0 || powerMap[b.getGridX()][b.getGridY()];
+            boolean hasWater = b.getStats().getWaterConsumption() <= 0 || waterMap[b.getGridX()][b.getGridY()];
 
-            boolean hasPower = true;
-            boolean hasWater = true;
-
-            // ตึกต้องการไฟ แต่ช่องที่อยู่ไม่มีสีไฟ
-            if (b.getStats().getPowerConsumption() > 0 && !powerMap[bx][by]) {
-                hasPower = false;
-            }
-            // ตึกต้องการน้ำ แต่ช่องที่อยู่ไม่มีสีน้ำ
-            if (b.getStats().getWaterConsumption() > 0 && !waterMap[bx][by]) {
-                hasWater = false;
-            }
-
-
-            boolean isOp = hasPower && hasWater;
-            sim.setIsOperational(i, isOp);
+            sim.setIsOperational(i, hasPower && hasWater);
         }
 
         isGridDirty = false;
-        System.out.println("Grid Updated Successfully!");
-    }
-
-
-    // Helper Method: ระบายสี
-    private void paintRadius(boolean[][] map, int centerX, int centerY, int radius, int mapSize) {
-        int startX = Math.max(0, centerX - radius);
-        int endX = Math.min(mapSize - 1, centerX + radius);
-        int startY = Math.max(0, centerY - radius);
-        int endY = Math.min(mapSize - 1, centerY + radius);
-
-        for (int x = startX; x <= endX; x++) {
-            for (int y = startY; y <= endY; y++) {
-                map[x][y] = true;
-            }
-        }
+        System.out.println("Re-calculating Grid Success");
     }
 }

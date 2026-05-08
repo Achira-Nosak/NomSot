@@ -31,7 +31,7 @@ public class CityMasterStats {
 
     // ------------------------------ Financial ------------------------------
     public static class FinancialStats {
-        private volatile double treasuryCurrent = 10000;     //-inf - +inf Main
+        private volatile double treasuryCurrent = 100000;     //-inf - +inf Main
         private volatile double netIncomeCurrent = 0;        //-inf - +inf Main
         // Special Function
         private volatile double loanInterestRate = 0;        //0.0 - 0.1 Multiplier           // User Adjustable in Game
