@@ -1,5 +1,7 @@
 package GUI.GUIServices;
 
+import Logic.Core.GameMapManager;
+
 public class CameraManager {
     private static CameraManager instance;
     private double x = 0;
@@ -43,7 +45,7 @@ public class CameraManager {
         if (mouseY > screenHeight - EDGE_THRESHOLD) y += SCROLL_SPEED;
 
         // --- จุดสำคัญ: Camera Bounds (กันกล้องหลุดโลก) ---
-        double mapSizeInPixels = MapManager.getInstance().getMapSize() * tileSize;
+        double mapSizeInPixels = GameMapManager.getInstance().getMapSize() * tileSize;
 
         if (x < 0) x = 0;
         if (y < 0) y = 0;

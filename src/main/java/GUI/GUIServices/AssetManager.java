@@ -8,8 +8,11 @@ import java.util.Map;
 
 public class AssetManager {
     private static AssetManager instance;
-    private Map<String, Image> imageCache; // เปลี่ยน Key เป็น String (Building ID)
+    private Map<String, Image> imageCache;
+
+    // แยก Path ให้ชัดเจน
     private final String BUILDING_PATH = "/Assets/Building/";
+    private final String TILE_PATH = "/Assets/Tile/";
 
     private AssetManager() {
         imageCache = new HashMap<>();
@@ -21,6 +24,27 @@ public class AssetManager {
     }
 
     public void loadAllAssets() {
+        // ==========================================
+        // 1. โหลด Asset พื้นฐาน (Terrain Tiles) ที่ไม่ได้อยู่ใน JSON
+        // ==========================================
+        try {
+            // โหลดรูปน้ำ (เก็บด้วยคีย์ "water_tile")
+            Image waterImg = new Image(getClass().getResourceAsStream(TILE_PATH + "water_tile.png"));
+            imageCache.put("water_tile", waterImg);
+            System.out.println("Loaded Asset: water_tile");
+
+            // โหลดรูปหญ้า (เก็บด้วยคีย์ "grass_tile")
+            Image grassImg = new Image(getClass().getResourceAsStream(TILE_PATH + "grass_tile.png"));
+            imageCache.put("grass_tile", grassImg);
+            System.out.println("Loaded Asset: grass_tile");
+
+        } catch (Exception e) {
+            System.err.println("Failed to load Terrain Tiles (water/grass)");
+        }
+
+        // ==========================================
+        // 2. โหลด Asset ของตึกทั้งหมดจาก JSON (โค้ดเดิมของคุณ)
+        // ==========================================
         Map<String, BuildingData> allConfigs = ConfigLoader.getAllConfigs();
 
         for (BuildingData data : allConfigs.values()) {
@@ -28,13 +52,11 @@ public class AssetManager {
 
             String fullPath = BUILDING_PATH + data.getAssetFileName();
             try {
-                // โหลดภาพขนาดจริง
                 Image img = new Image(getClass().getResourceAsStream(fullPath));
-
                 imageCache.put(data.getId(), img);
-                System.out.println("✅ Loaded Asset for: " + data.getId());
+                System.out.println("Loaded Asset for: " + data.getId());
             } catch (Exception e) {
-                System.err.println("❌ Failed to load: " + fullPath);
+                System.err.println("Failed to load: " + fullPath);
             }
         }
     }

@@ -1,8 +1,10 @@
 package Logic.Core;
 
+import GUI.GUIServices.TerrainMapManager;
 import Logic.Stats.*;
 import Model.BaseBuilding;
 import Config.Enums.ZoneType;
+import Model.UtilityBuilding;
 
 
 import java.util.Arrays;
@@ -125,15 +127,25 @@ public class SimulationManager {
 
         if (index < 0 || index >= currentCount) return;
 
-        powerConsumptions[index] = b.getStats().getPowerConsumption();
-        waterConsumptions[index] = b.getStats().getWaterConsumption();
-        foodConsumptions[index] = b.getStats().getFoodConsumption();
-        powerProductions[index] = b.getStats().getPowerProduction();
-        waterProductions[index] = b.getStats().getWaterProduction();
-        foodProductions[index] = b.getStats().getFoodProduction();
+        powerConsumptions[index] = b.getCurrentPowerConsume();
+        waterConsumptions[index] = b.getCurrentWaterConsume();
+        foodConsumptions[index] = b.getCurrentFoodConsume();
+
+        if (b instanceof UtilityBuilding) {
+            UtilityBuilding utility = (UtilityBuilding) b;
+            powerProductions[index] = utility.getCurrentPowerProduction();
+            waterProductions[index] = utility.getCurrentWaterProduction();
+            foodProductions[index] = utility.getCurrentFoodProduction();
+        } else {
+            powerProductions[index] = b.getStats().getPowerProduction();
+            waterProductions[index] = b.getStats().getWaterProduction();
+            foodProductions[index] = b.getStats().getFoodProduction();
+        }
+
         pollutionTotals[index] = b.getStats().getPollutionIntensity();
-        taxRevenues[index] = b.getStats().getBaseTaxRevenue();
-        maintenanceCosts[index] = b.getStats().getMaintenance();
+        taxRevenues[index] = b.getCurrentTax();
+        maintenanceCosts[index] = b.getCurrentMaintenance();
+        happinessLevels[index] = b.getCurrentHappiness();
 
         GridDirtyFlag.getInstance().makeGridDirty();
     }
@@ -207,6 +219,32 @@ public class SimulationManager {
     }
 
 
+
+
+
+    public boolean canConstruct(BaseBuilding b) {
+        CityMasterStats stats = CityMasterStats.getInstance();
+        // 1. เช็คเงิน
+        if (stats.finance.getTreasuryCurrent() < b.getStats().getConstructionCost()) return false;
+        // 2. เช็คน้ำ (Terrain)
+         if (TerrainMapManager.getInstance().isWater(b.getGridX(), b.getGridY())) return false;
+        // 3. เช็คกำลังการผลิตไฟฟ้าและน้ำที่เหลืออยู่
+        double powerSurplus = stats.infrastructure.getPowerSupply() - stats.infrastructure.getPowerDemand();
+        double waterSurplus = stats.infrastructure.getWaterSupply() - stats.infrastructure.getWaterDemand();
+        if (b.getCurrentPowerConsume() > 0 && powerSurplus < b.getCurrentPowerConsume()) return false;
+        if (b.getCurrentWaterConsume() > 0 && waterSurplus < b.getCurrentWaterConsume()) return false;
+
+        return true;
+    }
+
+    public void construct(BaseBuilding b) {
+        CityMasterStats stats = CityMasterStats.getInstance();
+        // หักเงิน
+        stats.finance.setTreasuryCurrent(stats.finance.getTreasuryCurrent() - b.getStats().getConstructionCost());
+        // จดทะเบียนตึกเข้าสู่ระบบ
+        GameMapManager.getInstance().setTile(b.getGridX(), b.getGridY(), b.getBuildingId());
+        registerBuilding(b);
+    }
 
 
 

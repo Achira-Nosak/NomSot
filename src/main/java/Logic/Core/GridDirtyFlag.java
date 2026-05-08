@@ -1,7 +1,8 @@
 package Logic.Core;
 
 import Model.BaseBuilding;
-import GUI.GUIServices.MapManager;
+import Model.IAuraProvider;
+import Model.IResourceProducer;
 
 public class GridDirtyFlag {
     private static GridDirtyFlag instance;
@@ -31,7 +32,7 @@ public class GridDirtyFlag {
 
         System.out.println("Re-calculating Power and Water Grid...");
 
-        int mapSize = MapManager.getInstance().getMapSize();
+        int mapSize = GameMapManager.getInstance().getMapSize();
 
         powerMap = new boolean[mapSize][mapSize];
         waterMap = new boolean[mapSize][mapSize];
@@ -40,7 +41,7 @@ public class GridDirtyFlag {
         BaseBuilding[] buildings = sim.getBuildingRefs();
         int count = sim.getCurrentCount();
 
-        // 1: ให้ Provider ระบายสีรัศมี
+        // 1: ระบายสีรัศมี
         for (int i = 0; i < count; i++) {
             BaseBuilding b = buildings[i];
             if (b == null) continue;
@@ -48,13 +49,19 @@ public class GridDirtyFlag {
             int bx = b.getGridX();
             int by = b.getGridY();
 
-            int radius = (int) b.getStats().getServiceRadius();
 
-            if (b.getStats().getPowerProduction() > 0) {
-                paintRadius(powerMap, bx, by, radius, mapSize);
+            if (b instanceof IResourceProducer) {
+                int radius = (int) b.getStats().getServiceRadius();
+                if (b.getStats().getPowerProduction() > 0) paintRadius(powerMap, bx, by, radius, mapSize);
+                if (b.getStats().getWaterProduction() > 0) paintRadius(waterMap, bx, by, radius, mapSize);
             }
-            if (b.getStats().getWaterProduction() > 0) {
-                paintRadius(waterMap, bx, by, radius, mapSize);
+
+            if (b instanceof IAuraProvider) {
+                IAuraProvider auraBuilding = (IAuraProvider) b;
+                int auraRadius = (int) auraBuilding.getAuraRadius();
+
+                // TODO: เรียกใช้งาน applyAuraToSurroundings() หรือระบายลง Aura Map
+                ((IAuraProvider) b).applyAuraToSurroundings();
             }
         }
 
@@ -85,7 +92,7 @@ public class GridDirtyFlag {
         }
 
         isGridDirty = false;
-        System.out.println("✅ Grid Updated Successfully!");
+        System.out.println("Grid Updated Successfully!");
     }
 
 

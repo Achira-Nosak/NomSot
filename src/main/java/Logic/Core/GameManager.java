@@ -30,10 +30,6 @@ public class GameManager {
 
 
     // Main Game State
-    /**
-     * Advances the game time by one tick.
-     * To be called exclusively by the SimulationManager.
-     */
     public void advanceTick() {
         currentTick++;
         if (currentTick > 0 && currentTick % 24 == 0) { // 24 ticks per day
@@ -42,21 +38,7 @@ public class GameManager {
                 gameDay = 1;
                 gameMonth++;
             }
-            printDailyReport();
         }
-    }
-
-
-    private void printDailyReport() {
-        double treasury = CityMasterStats.getInstance().finance.getTreasuryCurrent();
-        double netIncome = CityMasterStats.getInstance().finance.getNetIncomeCurrent();
-        double tax = CityMasterStats.getInstance().finance.getTaxRevenueBase();
-
-        System.out.println("📅 [Month " + gameMonth + " | Day " + gameDay + "] " +
-                "💰 เงินในคลัง: $" + String.format("%.2f", treasury) +
-                " | 📈 รายได้สุทธิ: $" + String.format("%.2f", netIncome) +
-                " | รายได้: $" + String.format("%.2f", tax)
-        );
     }
 
 }

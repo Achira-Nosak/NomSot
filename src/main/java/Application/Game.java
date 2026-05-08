@@ -10,6 +10,7 @@ import GUI.InitialPhase.InitAssetNSound;
 import GUI.InitialPhase.InitDataStructure;
 import GUI.InitialPhase.InitMap;
 import Logic.Core.SimulationManager;
+import Model.BaseBuilding;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;

@@ -2,7 +2,7 @@ package GUI.GameLoopPhase.UpdateLogic;
 
 import GUI.GUIServices.GUIManager;
 import GUI.GUIServices.CameraManager;
-import GUI.GUIServices.MapManager;
+import Logic.Core.GameMapManager;
 import Logic.Core.SimulationManager;
 import Model.BaseBuilding;
 import Model.BuildingFactory;
@@ -12,7 +12,7 @@ import javafx.scene.input.MouseEvent;
 
 public class InputSensing {
 
-    // ⭐️ 1. เพิ่มสถานะ MODE_IDLE
+    // 1. สถานะ MODE_IDLE
     public static final int MODE_IDLE = 0;
     public static final int MODE_BUILD = 1;
     public static final int MODE_DEMOLISH = 2;
@@ -20,7 +20,7 @@ public class InputSensing {
     private static int currentMode = MODE_IDLE; // เริ่มเกมมาให้เมาส์ว่าง
     private static String selectedBuildingId = "";
 
-    // ⭐️ 2. ตัวแปรเก็บตำแหน่ง Grid ที่เมาส์ชี้อยู่ (สำหรับ Preview)
+    // 2. ตัวแปรเก็บตำแหน่ง Grid ที่เมาส์ชี้อยู่ (สำหรับ Preview)
     private static int hoverGridX = -1;
     private static int hoverGridY = -1;
 
@@ -59,12 +59,11 @@ public class InputSensing {
 
     public static void setupInput(Canvas canvas) {
         canvas.setOnMouseClicked(event -> handleMouseClick(event, canvas));
-        // ⭐️ 3. เพิ่มการดักจับตอนขยับเมาส์ เพื่ออัปเดต Hover
+        // 3. ดักจับตอนขยับเมาส์ เพื่ออัปเดต Hover
         canvas.setOnMouseMoved(event -> handleMouseMove(event, canvas));
     }
 
-    // ========================================================
-    // 🧮 เมธอดคำนวณ Isometric แบบใช้ซ้ำได้
+    // เมธอดคำนวณ Isometric แบบใช้ซ้ำได้
     // ========================================================
     private static int[] getGridCoords(double mouseX, double mouseY, double screenWidth) {
         double camX = CameraManager.getInstance().getX();
@@ -82,8 +81,8 @@ public class InputSensing {
         return new int[]{gridX, gridY};
     }
 
-    // ========================================================
-    // 🖱️ จัดการ Event เมาส์
+
+    // จัดการ Event เมาส์
     // ========================================================
     private static void handleMouseMove(MouseEvent event, Canvas canvas) {
         int[] coords = getGridCoords(event.getX(), event.getY(), canvas.getWidth());
@@ -92,7 +91,7 @@ public class InputSensing {
     }
 
     private static void handleMouseClick(MouseEvent event, Canvas canvas) {
-        // ⭐️ 4. ดักจับคลิกขวา (SECONDARY) เพื่อยกเลิกกลับไปสถานะว่าง
+        // 4. ดักจับคลิกขวา (SECONDARY) เพื่อยกเลิกกลับไปสถานะว่าง
         if (event.getButton() == MouseButton.SECONDARY) {
             setIdleMode();
             return;
@@ -102,7 +101,7 @@ public class InputSensing {
         if (event.getButton() == MouseButton.PRIMARY) {
             int gridX = hoverGridX;
             int gridY = hoverGridY;
-            int mapSize = MapManager.getInstance().getMapSize();
+            int mapSize = GameMapManager.getInstance().getMapSize();
 
             if (gridX >= 0 && gridX < mapSize && gridY >= 0 && gridY < mapSize) {
                 handleGridClick(gridX, gridY);
@@ -116,22 +115,29 @@ public class InputSensing {
         }
 
         else if (currentMode == MODE_BUILD) {
-            if (!MapManager.getInstance().getBuildingIdAt(x, y).equals(MapManager.EMPTY_TILE_ID)) {
-                System.out.println("❌ สร้างไม่ได้ มีตึกอยู่แล้ว!");
+            if (!GameMapManager.getInstance().getBuildingIdAt(x, y).equals(GameMapManager.EMPTY_TILE_ID)) {
+                System.out.println("สร้างไม่ได้ มีตึกอยู่แล้ว!");
                 return;
             }
-            MapManager.getInstance().setTile(x, y, selectedBuildingId);
+
+            // สร้าง Object ตึกจำลองขึ้นมาเพื่อใช้เช็คเงื่อนไข
             BaseBuilding newBuilding = BuildingFactory.createBuilding(selectedBuildingId, x, y);
+
             if (newBuilding != null) {
-                SimulationManager.getInstance().registerBuilding(newBuilding);
-                System.out.println("✅ Built: " + selectedBuildingId + " at " + x + "," + y);
+                // เรียกใช้ลอจิกจาก SimulationManager
+                if (SimulationManager.getInstance().canConstruct(newBuilding)) {
+                    SimulationManager.getInstance().construct(newBuilding);
+                    System.out.println("Built: " + selectedBuildingId + " at " + x + "," + y);
+                } else {
+                    System.out.println("สร้างไม่ได้: ทรัพยากรไม่พอ หรือพื้นที่ไม่เหมาะสม!");
+                }
             }
         }
 
         else if (currentMode == MODE_DEMOLISH) {
-            String existingId = MapManager.getInstance().getBuildingIdAt(x, y);
-            if (existingId != null && !existingId.equals(MapManager.EMPTY_TILE_ID)) {
-                MapManager.getInstance().setTile(x, y, MapManager.EMPTY_TILE_ID);
+            String existingId = GameMapManager.getInstance().getBuildingIdAt(x, y);
+            if (existingId != null && !existingId.equals(GameMapManager.EMPTY_TILE_ID)) {
+                GameMapManager.getInstance().setTile(x, y, GameMapManager.EMPTY_TILE_ID);
                 SimulationManager.getInstance().removeBuildingAt(x, y);
             }
         }

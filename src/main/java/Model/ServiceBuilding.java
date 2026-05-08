@@ -2,10 +2,15 @@ package Model;
 
 import Config.Enums.ZoneType;
 
-public class ServiceBuilding extends BaseBuilding implements IAuraProvider {
+public class ServiceBuilding extends BaseBuilding implements IAuraProvider, IUpgradable {
+
+    private double currentAuraRadius;
 
     public ServiceBuilding(String buildingId, int gridX, int gridY) {
         super(buildingId, gridX, gridY, ZoneType.OTHER);
+        if (getStats() != null) {
+            this.currentAuraRadius = getStats().getServiceRadius();
+        }
     }
 
     @Override
@@ -16,12 +21,27 @@ public class ServiceBuilding extends BaseBuilding implements IAuraProvider {
     @Override
     public void applyAuraToSurroundings() {
         double radius = getAuraRadius();
-        // ดึงค่าบัฟต่างๆ จาก getStats() เช่น getHealthBonus(), getSafetyBonus()
-        // แล้วลูปแจกบัฟให้ตึกคนอยู่อาศัยที่อยู่ในรัศมี
     }
 
     @Override
     public double getAuraRadius() {
-        return getStats().getServiceRadius();
+        return currentAuraRadius;
     }
+
+
+    @Override
+    public boolean canUpgrade() {
+        return false;
+    }
+
+    @Override
+    public void upgradeLevel() {
+        level++;
+    }
+
+    @Override
+    public int getCurrentLevel() { return level; }
+
+    public double getCurrentAuraRadius() { return currentAuraRadius; }
+    public void setCurrentAuraRadius(double currentAuraRadius) { this.currentAuraRadius = currentAuraRadius; }
 }

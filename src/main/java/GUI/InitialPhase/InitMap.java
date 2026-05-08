@@ -1,10 +1,11 @@
 package GUI.InitialPhase;
 
-import GUI.GUIServices.MapManager;
+import Logic.Core.GameMapManager;
 
 public class InitMap {
 
     public static void Init() {
-        MapManager.getInstance();
+        GameMapManager.getInstance();
+        GUI.GUIServices.TerrainMapManager.getInstance().initMap();
     }
 }

@@ -3,8 +3,8 @@ package Model;
 import Config.Enums.ZoneType;
 
 public class ZonedBuilding extends BaseBuilding implements IUpgradable {
-    private int currentLevel = 1;
-    private int currentOccupants = 0; // จำนวนคนหรือพนักงานปัจจุบัน
+    private int currentResidents = 0;
+    private int currentWorkers = 0;
 
     public ZonedBuilding(String buildingId, int gridX, int gridY, ZoneType zoneType) {
         super(buildingId, gridX, gridY, zoneType);
@@ -12,7 +12,6 @@ public class ZonedBuilding extends BaseBuilding implements IUpgradable {
 
     @Override
     public void onTick(long currentTick) {
-        // เช็คว่าคนอยู่อย่างมีความสุขไหม น้ำไฟพอไหม ถ้าพอถึงเกณฑ์ก็อัปเกรด
         if (canUpgrade()) {
             upgradeLevel();
         }
@@ -20,16 +19,20 @@ public class ZonedBuilding extends BaseBuilding implements IUpgradable {
 
     @Override
     public boolean canUpgrade() {
-        // ลอจิกเช็ค Land Value หรือ Happiness
         return false;
     }
 
     @Override
     public void upgradeLevel() {
-        currentLevel++;
-        // เปลี่ยนโมเดลตึก หรือเพิ่มความจุก็ว่าไป
+        level++;
     }
 
     @Override
-    public int getCurrentLevel() { return currentLevel; }
+    public int getCurrentLevel() { return level; }
+
+    public int getCurrentResidents() { return currentResidents; }
+    public void setCurrentResidents(int currentResidents) { this.currentResidents = currentResidents; }
+
+    public int getCurrentWorkers() { return currentWorkers; }
+    public void setCurrentWorkers(int currentWorkers) { this.currentWorkers = currentWorkers; }
 }
