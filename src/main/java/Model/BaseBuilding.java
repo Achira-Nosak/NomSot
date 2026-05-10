@@ -3,8 +3,17 @@ package Model;
 import Config.BuildingData;
 import Config.ConfigLoader;
 import Config.Enums.ZoneType;
-import Logic.Stats.CityMasterStats;
 
+/**
+ * Abstract Class แม่แบบหลักของสิ่งปลูกสร้างทั้งหมดในเกม
+ * <p><b>Architecture and Design Concepts:</b></p>
+ * <ul>
+ * <li>Inheritance: รวบรวมตัวแปรและเมธอดพื้นฐานที่ทุกตึกต้องมี ไว้ที่ส่วนกลางเพื่อลดการเขียนโค้ดซ้ำซ้อน</li>
+ * <li>Polymorphism: บังคับใช้ Abstract Method onTick() เพื่อให้ SimulationManager สามารถวนลูปสั่งอัปเดตตึกทุกชนิดได้พร้อมกันผ่าน Base Reference โดยไม่ต้องเขียนเช็คประเภทตึก</li>
+ * <li>State Management: สาธิตการแยกเก็บสถานะ โดยบันทึกเฉพาะค่าที่ "เปลี่ยนแปลงได้เฉพาะตึก" (Dynamic State เช่น currentTax, currentHappiness) ไว้ใน Object
+ * ส่วนค่าพื้นฐานที่คงที่จะใช้การดึงผ่าน ConfigLoader ด้วย Building ID เพื่อประหยัดหน่วยความจำ (Memory Optimization) ไม่ต้องเก็บข้อมูล JSON ซ้ำกันทุกตึก</li>
+ * </ul>
+ */
 public abstract class BaseBuilding {
     protected String buildingId; // ID ที่ตรงกับ JSON
     protected int gridX;

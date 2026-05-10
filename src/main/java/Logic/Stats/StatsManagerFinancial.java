@@ -1,5 +1,12 @@
 package Logic.Stats;
 
+/**
+ * <ul>
+ * <li>Singleton</li>
+ * <li>จัดการ logic และ Stat ทั้งหมดที่เกี่ยวกับ Financial ของเกม</li>
+ * <li>Class นี้ถูกเรียกใช้โดย SimulationManager</li>
+ * </ul>
+ */
 public class StatsManagerFinancial {
     private static StatsManagerFinancial instance;
 
@@ -12,6 +19,32 @@ public class StatsManagerFinancial {
         return instance;
     }
 
+
+    /**
+     * จัดการ Logic และ Stat (Financial) ของเกมในแต่ละ Tick
+     * <p><b>Logic Overview:</b>
+     * <ul>
+     * <li>TaxRevenue = Base(from SimulationManager) * TaxRateByType(adjust by player) * HappyMultiplier(0.2x ที่ความสุข 0 ถึง 1.2x ที่ความสุข 100)</li>
+     * <li>MaintenanceCost = Base(from SimulationManager)</li>
+     * <li>รวม TotalTaxRevenue TotalMaintenanceCost netIncome อัปเดตไปยัง CityMasterStats</li>
+     * </ul>
+     * * <p><b>Future Enhancement:</b>
+     * <ul>
+     * <li>พัฒนาระบบตรวจสอบ Happiness รายตึกเพื่อนำมาเป็นตัวคูณภาษีที่ละเอียดขึ้น</li>
+     * <li>รองรับระบบ Tax Revenue Buff/Debuff จากอีเวนต์พิเศษของเมือง</li>
+     * <li>เพิ่มระบบ Loan Interest Rate ที่ผูกกับเงินกู้และสถานะความน่าเชื่อถือของเมือง</li>
+     * <li>เพิ่มการคำนวณรายได้และภาษีทางตรงจากแรงงาน โดยแปรผันตามระดับทักษะและการศึกษา</li>
+     * </ul>
+     * * @param rawResTax
+     * @param rawComTax
+     * @param rawIndTax
+     * @param rawAgrTax
+     * @param rawResMaint
+     * @param rawComMaint
+     * @param rawIndMaint
+     * @param rawAgrMaint
+     * @param rawOtherMaint
+     */
     public void processTick(
             double rawResTax, double rawComTax, double rawIndTax, double rawAgrTax,
             double rawResMaint, double rawComMaint, double rawIndMaint, double rawAgrMaint, double rawOtherMaint) {

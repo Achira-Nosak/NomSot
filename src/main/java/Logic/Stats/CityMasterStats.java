@@ -1,5 +1,16 @@
 package Logic.Stats;
 
+
+/**
+ * <ul>
+ * <li>Singleton</li>
+ * <li>เก็บ MainGameStat ทั้งหมดไว้ที่นี่ที่เดียวเท่านั้น</li>
+ * <li>ใช้ตัวแปรแบบ private volatile เพื่อ Thread-Safe</li>
+ * <li>ค่า Stat ต่างๆจะถูก set ผ่านทาง StatsManager แต่ละประเภทหรือผ่านทาง Method onTick Building ได้เท่านั้น</li>
+ * <li>ค่า Stat ต่างๆจะสามารถเรียก get ได้จากทุกที่</li>
+ * <li>เรียกใช้ได้โดย CityMasterStats.getInstance().{7 Types (public final)}.get{Something}()</li>
+ * </ul>
+ */
 public class CityMasterStats {
     private static CityMasterStats instance;
 

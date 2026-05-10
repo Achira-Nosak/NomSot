@@ -20,7 +20,7 @@ public class DateTimeBar {
         root.setPadding(new Insets(8, 15, 8, 15));
         root.setPickOnBounds(false);
 
-        // ⭐️ 1. สั่งให้กล่องหดพอดีตัวอักษร ไม่ยืดเต็มช่อง!
+        // 1. สั่งให้กล่องหดพอดีตัวอักษร ไม่ยืดเต็มช่อง!
         root.setMaxWidth(Region.USE_PREF_SIZE);
         root.setMaxHeight(Region.USE_PREF_SIZE);
 

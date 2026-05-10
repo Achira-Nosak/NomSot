@@ -2,6 +2,16 @@ package GUI.GUIServices;
 
 import Logic.Core.GameMapManager;
 
+
+/**
+ * ระบบจัดการมุมมองกล้องและพิกัดการแสดงผล (Camera & Viewport Manager)
+ * <ul>
+ * <li>Singleton</li>
+ * <li>GUI Service Tool: ทำหน้าที่แยกรับ Input ลอจิกการเลื่อนเมาส์และการหมุนลูกกลิ้ง (Scroll) ออกมาประมวลผลเป็นตัวเลข ก่อนจะส่งให้คลาสวาดภาพนำไปใช้ต่อ</li>
+ * <li>Edge-Scrolling & Clamping: มีลอจิกเช็คพิกัดเมาส์ชนขอบจอเพื่อเลื่อนแผนที่อัตโนมัติ พร้อมประยุกต์ใช้คณิตศาสตร์ (Math.max/min) สร้าง Bounding Box กั้นไม่ให้ผู้เล่นเลื่อนจอหลุดออกนอกโลก</li>
+ * <li>Prototype Note: โครงสร้างเตรียมรองรับคณิตศาสตร์สำหรับการคำนวณพิกัดแบบ 2.5D (Isometric Projection) ในอนาคตผ่านเมธอด centerOnMap</li>
+ * </ul>
+ */
 public class CameraManager {
     private static CameraManager instance;
     private double x = 0;
@@ -29,7 +39,7 @@ public class CameraManager {
     //------------------------------------------------------------------------------------------------
 
     private final double SCROLL_SPEED = 8.0; // ความเร็วกล้อง
-    private final double EDGE_THRESHOLD = 30.0; // ระยะห่างจากขอบจอที่จะเริ่มเลื่อน (Pixels)
+    private final double EDGE_THRESHOLD = 20.0; // ระยะห่างจากขอบจอที่จะเริ่มเลื่อน (Pixels)
 
     public void update(double mouseX, double mouseY, double screenWidth, double screenHeight) {
         // เลื่อนไปทางซ้าย (เมื่อเมาส์ชิดขอบซ้าย)
@@ -44,7 +54,7 @@ public class CameraManager {
         // เลื่อนลง (เมื่อเมาส์ชิดขอบล่าง)
         if (mouseY > screenHeight - EDGE_THRESHOLD) y += SCROLL_SPEED;
 
-        // --- จุดสำคัญ: Camera Bounds (กันกล้องหลุดโลก) ---
+        // --- Camera Bounds (กันกล้องหลุดโลก) ---
         double mapSizeInPixels = GameMapManager.getInstance().getMapSize() * tileSize;
 
         if (x < 0) x = 0;
@@ -55,7 +65,7 @@ public class CameraManager {
 
 
     public void handleZoom(double deltaY) {
-        double zoomSpeed = 4.0; // ความเร็วในการซูม (เพิ่มทีละ 4 พิกเซล)
+        double zoomSpeed = 3.0; // ความเร็วในการซูม
 
         if (deltaY > 0) {
             tileSize += zoomSpeed;
@@ -67,6 +77,7 @@ public class CameraManager {
         // System.out.println("Current TileSize: " + tileSize);
     }
 
+    // เผื่ออนาคต
     public void centerOnMap(int mapSize, double screenWidth, double screenHeight) {
         double halfWidth = tileSize / 2.0;
         double halfHeight = tileSize / 4.0;

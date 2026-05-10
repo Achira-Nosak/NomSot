@@ -1,72 +1,45 @@
 package Config;
 
-import javafx.scene.paint.Color;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import java.lang.reflect.Field;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import javafx.scene.paint.Color;
+import Config.BuildingData;
+import java.lang.reflect.Field;
 
-public class BuildingDataTest {
+class BuildingDataTest {
 
-    private BuildingData buildingData;
-
-    @BeforeEach
-    void setUp() {
-        buildingData = new BuildingData();
-    }
-
+    // เช็คว่าถ้าค่าเริ่มต้น (Default) เป็นโค้ดสีที่ถูกต้อง จะต้องแปลงเป็น JavaFX Color ได้เป๊ะๆ
     @Test
-    @DisplayName("Default Values: ตรวจสอบค่าเริ่มต้นของฟิลด์พื้นฐาน")
-    void testDefaultValues() {
-        assertNotNull(buildingData.getDescription());
-        assertEquals("NONE", buildingData.getLogicGroup());
-        assertEquals("Uncategorized", buildingData.getBuildBarTag());
+    void testGetBaseColorValidHex() {
+        BuildingData data = new BuildingData();
+
+        // ค่าเริ่มต้นคือ "#32CD32" (LimeGreen)
+        Color expectedColor = Color.web("#32CD32");
+        assertEquals(expectedColor, data.getBaseColor());
     }
 
+    // เช็คระบบ Fallback ว่าถ้า JSON ดึงค่าโค้ดสีมามั่วๆ (Try-Catch) เกมต้องไม่ Crash แต่ต้องคืนค่าสี Magenta
     @Test
-    @DisplayName("getBaseColor: ใส่ Hex ถูกต้อง ต้องคืนค่าสีที่ถูกต้อง")
-    void testGetBaseColorValid() throws Exception {
-        setPrivateField(buildingData, "baseColorHex", "#FF0000"); // สีแดง
+    void testGetBaseColorInvalidHexFallback() throws Exception {
+        BuildingData data = new BuildingData();
 
-        Color result = buildingData.getBaseColor();
+        // 🌟 ใช้ Java Reflection เพื่อแอบยัดค่าตัวแปร Private (จำลองสถานการณ์ JSON อ่านไฟล์ผิด)
+        Field colorField = BuildingData.class.getDeclaredField("baseColorHex");
+        colorField.setAccessible(true);
+        colorField.set(data, "NOT_A_COLOR"); // ใส่ตัวหนังสือมั่วๆ ที่ไม่ใช่ Hex
 
-        assertEquals(Color.RED, result, "ควรคืนค่าสีแดงเมื่อใส่ Hex #FF0000");
+        // เมธอดต้อง Catch Exception ได้ และคืนค่า Magenta ออกมาอย่างปลอดภัย
+        assertEquals(Color.MAGENTA, data.getBaseColor());
     }
 
+    // เช็คว่าค่า Default ของตึกที่เพิ่งสร้างใหม่ จะต้องเป็น 0 หรือค่าว่างที่ปลอดภัยต่อการนำไปคำนวณเสมอ
     @Test
-    @DisplayName("getBaseColor: ใส่ Hex ผิดรูปแบบ ต้องคืนค่า Color.MAGENTA (Error Color)")
-    void testGetBaseColorInvalid() throws Exception {
-        setPrivateField(buildingData, "baseColorHex", "NOT_A_COLOR");
+    void testDefaultValuesAreSafe() {
+        BuildingData data = new BuildingData();
 
-        Color result = buildingData.getBaseColor();
-
-        assertEquals(Color.MAGENTA, result, "กรณี Error ต้องคืนค่าสี MAGENTA ตามที่กำหนดใน catch block");
-    }
-
-    @Test
-    @DisplayName("Data Integrity: ตรวจสอบการคืนค่าตัวเลขจาก Getter (ตัวอย่าง Construction Cost)")
-    void testDataIntegrity() throws Exception {
-        double expectedCost = 5000.50;
-        setPrivateField(buildingData, "constructionCost", expectedCost);
-
-        assertEquals(expectedCost, buildingData.getConstructionCost(), 0.001);
-    }
-
-    @Test
-    @DisplayName("Getters: ตรวจสอบการคืนค่า String (ตัวอย่าง Name และ ID)")
-    void testStringGetters() throws Exception {
-        setPrivateField(buildingData, "id", "power_plant_01");
-        setPrivateField(buildingData, "name", "โรงไฟฟ้าถ่านหิน");
-
-        assertEquals("power_plant_01", buildingData.getId());
-        assertEquals("โรงไฟฟ้าถ่านหิน", buildingData.getName());
-    }
-
-
-    private void setPrivateField(Object object, String fieldName, Object value) throws Exception {
-        Field field = object.getClass().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(object, value);
+        assertEquals(0.0, data.getConstructionCost());
+        assertEquals(0, data.getMaxResidents());
+        assertEquals("NONE", data.getLogicGroup());
+        assertEquals("Uncategorized", data.getBuildBarTag());
     }
 }

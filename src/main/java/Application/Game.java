@@ -20,9 +20,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Adds a real-time stats HUD and a build bar.
- */
 public class Game extends Application {
 
     private double currentMouseX, currentMouseY;
@@ -34,15 +31,13 @@ public class Game extends Application {
         InitMap.Init();
 
 
-
         GUIManager ui = GUIManager.getInstance();
         ui.initialize(1000, 800);
         primaryStage.setWidth(1280);
         primaryStage.setHeight(720);
-        primaryStage.setTitle("My City Game");
+        primaryStage.setTitle("NomSot City Game");
         primaryStage.setScene(ui.getScene());
         primaryStage.show();
-
 
 
         GUIManager.getInstance().getScene().setOnMouseMoved(e -> {
@@ -74,18 +69,12 @@ public class Game extends Application {
 
         primaryStage.setOnCloseRequest(e -> {
             simulationThread.shutdown();
-            System.out.println("Simulation Thread Shutdown.");
         });
 
 
         AnimationTimer gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                // ส่วนที่ 1: UpdateLogic
-//                simulationExecution();
-//                stateRuleChecking();
-//                uiDataPrep();
-
                 CameraManager.getInstance().update(
                         currentMouseX,
                         currentMouseY,
@@ -94,7 +83,7 @@ public class Game extends Application {
                 );
 
 
-                // ส่วนที่ 2: UpdateRender
+                // UpdateRender
                 GUIManager.getInstance().clear(); // ล้างจอ
                 LayerBackground.render();
 //                renderWorldObject();

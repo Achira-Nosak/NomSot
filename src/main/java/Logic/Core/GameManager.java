@@ -1,7 +1,13 @@
 package Logic.Core;
 
-import Logic.Stats.CityMasterStats;
-
+/**
+ * <ul>
+ * <li>Singleton</li>
+ * <li>เก็บค่าเวลาทั้งหมดของเกม</li>
+ * <li>update Tick เรียกผ่าน avancedTick() เท่านั้น!!!</li>
+ * <li>Class นี้ถูกเรียกใช้ได้ทุกที่</li>
+ * </ul>
+ */
 public class GameManager {
     private static GameManager instance;
 

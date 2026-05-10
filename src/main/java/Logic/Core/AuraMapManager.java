@@ -3,6 +3,15 @@ package Logic.Core;
 import Model.BaseBuilding;
 import Model.IAuraProvider;
 
+
+/**
+ * <ul>
+ * <li>Singleton</li>
+ * <li>เก็บค่า intensity ของ Stats แต่ละประเภท จากตึก IAuraProvider เป็น Map ในรูปแบบ double[x][y]</li>
+ * <li>Aura สามารถทับซ้อนกันได้ ทำให้ intensity เพิ่ม</li>
+ * <li>Class นี้ถูกเรียกใช้โดย GridDirtyFlag</li>
+ * </ul>
+ */
 public class AuraMapManager {
     private static AuraMapManager instance;
     private int mapSize;
@@ -23,6 +32,10 @@ public class AuraMapManager {
         return instance;
     }
 
+
+    /**
+     * ลูปเรียก building ทุกตัวที่ instance of IAuraProvider มาเรียก applyAuraToSurroundings()
+     */
     public void recalculateAuras() {
         clearMaps();
         SimulationManager sim = SimulationManager.getInstance();
@@ -31,13 +44,16 @@ public class AuraMapManager {
         // วนลูปเฉพาะตึกที่มี Interface IAuraProvider และกำลังทำงานอยู่
         for (int i = 0; i < sim.getCurrentCount(); i++) {
             if (buildings[i] != null && sim.getIsOperational(i) && buildings[i] instanceof IAuraProvider) {
-                // มอบหมายให้ตึกจัดการระบายสีออร่าของตัวเองลงใน Manager นี้
+                // ให้ตึกจัดการระบายสีออร่าของตัวเองลงใน Manager นี้
                 ((IAuraProvider) buildings[i]).applyAuraToSurroundings(this);
             }
         }
     }
 
-    // Helper Method สำหรับระบายสีแบบไล่ระดับ (Gradient)
+
+    /**
+     * Helper Method ให้ ตึกที่มี IAuraProvider เรียกคำนวณ Intensity ให้อัตโนมัติ โดยยิ่งไกลยิ่งจาง (Gradient)
+     */
     public void paintGradientAura(String type, int cx, int cy, int radius, double intensity) {
         double[][] targetMap = getMapByType(type);
         if (targetMap == null || radius <= 0) return;

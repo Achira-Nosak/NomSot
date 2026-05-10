@@ -24,7 +24,7 @@ public class SoundManager {
             URL resource = getClass().getResource(SOUND_PATH + fileName);
 
             if (resource == null) {
-                System.err.println("❌ หาไฟล์เพลงไม่เจอ: " + SOUND_PATH + fileName);
+                System.err.println("หาไฟล์เพลงไม่เจอ: " + SOUND_PATH + fileName);
                 return;
             }
 
@@ -36,17 +36,17 @@ public class SoundManager {
             Media media = new Media(resource.toString());
             bgmPlayer = new MediaPlayer(media);
 
-            // ตั้งค่าให้เล่นวนลูปไปเรื่อยๆ (INDEFINITE)
+            // ตั้งค่าให้เล่นวนลูปไปเรื่อยๆ
             bgmPlayer.setCycleCount(MediaPlayer.INDEFINITE);
 
             // ปรับระดับเสียง (0.0 ถึง 1.0)
             bgmPlayer.setVolume(0.3);
 
             bgmPlayer.play();
-            System.out.println("🔊 Playing BGM: " + fileName);
+            System.out.println("Playing BGM: " + fileName);
 
         } catch (Exception e) {
-            System.err.println("❌ เกิดข้อผิดพลาดในการโหลดไฟล์เสียง: " + e.getMessage());
+            System.err.println("เกิดข้อผิดพลาดในการโหลดไฟล์เสียง: " + e.getMessage());
         }
     }
 

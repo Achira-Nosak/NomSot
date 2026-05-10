@@ -1,5 +1,13 @@
 package Logic.Stats;
 
+
+/**
+ * <ul>
+ * <li>Singleton</li>
+ * <li>จัดการ logic และ Stat ทั้งหมดที่เกี่ยวกับ Population ของเกม</li>
+ * <li>Class นี้ถูกเรียกใช้โดย SimulationManager</li>
+ * </ul>
+ */
 public class StatsManagerPopulation {
     private static StatsManagerPopulation instance;
 
@@ -14,6 +22,21 @@ public class StatsManagerPopulation {
         return instance;
     }
 
+    /**
+     * จัดการ Logic และ Stat (Population) ของเกมในแต่ละ Tick
+     * <p><b>Logic Overview:</b>
+     * <ul>
+     * <li>สาธิตการคำนวณ Population เบื้องต้น</li>
+     * <li>totalPopulation = MaxPop(from simulationManager) * occupancyRate(by Happiness 0.0(0%) - 1.0(100%)</li>
+     * </ul>
+     * * <p><b>Future Enhancement:</b>
+     * <ul>
+     * <li>พัฒนาระบบการรวบรวมข้อมูล currentResidents currentWorkers จากตึกแต่ละ building โดยตรงและ Real-Time เพื่อความแม่นยำ</li>
+     * <li>พัฒนาระบบการเพิ่มลดของประชากรตาม Environmental and Social Factors และ PopLifeSpan</li>
+     * <li>พัฒนาระบบตลาดแรงงานแยกตามระดับการศึกษา (Elementary, HighSchool, Vocational, University)</li>
+     * </ul>
+     * * @param rawTotalMaxPop
+     */
     public void processTick(double rawTotalMaxPop) {
 
         CityMasterStats master = CityMasterStats.getInstance();

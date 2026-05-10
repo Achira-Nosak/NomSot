@@ -5,6 +5,16 @@ import Logic.Core.AuraMapManager;
 import Logic.Core.SimulationManager;
 import Logic.Stats.CityMasterStats;
 
+
+/**
+ * คลาสอาคารบริการสาธารณะ (เช่น สถานีตำรวจ โรงพยาบาล ดับเพลิง)
+ * <p>Prototype Note: ปัจจุบันสาธิตระบบ Dynamic Budgeting โครงสร้างถูกออกแบบมาเพื่อรองรับ Future Enhancement  เช่น การส่งรถฉุกเฉินออกไปยังจุดเกิดเหตุในอนาคต</p>
+ * <p><b>Architecture Highlight:</b></p>
+ * <ul>
+ * <li>Inheritance: สืบทอดคุณสมบัติพื้นฐานมาจาก BaseBuilding</li>
+ * <li>Multiple Interfaces: ทำ Implements IAuraProvider และ IUpgradable</li>
+ * </ul>
+ */
 public class ServiceBuilding extends BaseBuilding implements IAuraProvider, IUpgradable {
 
     private double currentAuraRadius;
@@ -17,6 +27,16 @@ public class ServiceBuilding extends BaseBuilding implements IAuraProvider, IUpg
         }
     }
 
+    /**
+     * <ul>
+     * <li>Polymorphism: ถูกเรียกใช้งานพร้อมกับตึกอื่นๆ ใน SimulationManager ผ่าน BaseReference
+     * ทำให้สั่งรัน onTick ได้ทันทีโดยไม่ต้องเขียน if-else แยกประเภทตึก</li>
+     * <li>Optimization: ใช้ลอจิก (currentTick + dataIndex) % 60 เพื่อกระจายคิว
+     * ให้ตึกแต่ละหลังทยอยประมวลผลไม่พร้อมกัน ช่วยลดภาระ CPU และป้องกันเกมกระตุก</li>
+     * <li>Prototype Logic: สาธิตระบบรัดเข็มขัด ถ้าเงินติดลบ จะลด radius ครึ่ง, maintCost ถ้่ามากกว่า 500000 จะเพิ่ม radius 1, maintCost แบบขั้นบันไดทีละ 100000
+     * เป็นโครงสร้างพื้นฐานที่เตรียมไว้รองรับฟีเจอร์อื่นๆ ในอนาคต</li>
+     * </ul>
+     */
     @Override
     public void onTick(long currentTick) {
         // เช็คการเงินเมืองทุกๆ 60 Tick
@@ -58,6 +78,9 @@ public class ServiceBuilding extends BaseBuilding implements IAuraProvider, IUpg
         }
     }
 
+    /**
+     * สาธิตการประยุกต์ใช้ Polymorphism ผ่าน Interface เพื่อประมวลผลข้อมูลเชิงพื้นที่ โดยเรียกใช้ helper method AuraMapManager.paintGradientAura()
+     */
     @Override
     public void applyAuraToSurroundings(AuraMapManager manager) {
         if (getStats().getSafetyBonus() > 0) {

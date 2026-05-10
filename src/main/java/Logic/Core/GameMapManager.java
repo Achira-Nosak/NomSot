@@ -1,5 +1,13 @@
 package Logic.Core;
 
+
+/**
+ * <ul>
+ * <li>Singleton</li>
+ * <li>เก็บ Map object ทั้งหมดของเกม ว่าตรง x y นั้นเป็นตึกอะไร ในรูปแบบ string[x][y]</li>
+ * <li>Class นี้ถูกเรียกใช้ได้ทุกที่</li>
+ * </ul>
+ */
 public class GameMapManager {
     private static GameMapManager instance;
 
@@ -7,7 +15,7 @@ public class GameMapManager {
     private String[][] mapData;
     private final int MAP_SIZE = 1000;
 
-    // กำหนดชื่อ ID พื้นฐานสำหรับช่องว่าง
+    // ชื่อ ID พื้นฐานสำหรับช่องว่าง
     public static final String EMPTY_TILE_ID = "EMPTY";
 
     private GameMapManager() {
@@ -33,7 +41,10 @@ public class GameMapManager {
         }
     }
 
-    // 3. ชื่อและ Type ให้คืนค่าเป็น String (เอาไปใช้ใน LayerBackground)
+    /**
+     * ใช้ใน LayerBackground / Render
+     */
+    // 3. ชื่อและ Type ให้คืนค่าเป็น String
     public String getBuildingIdAt(int x, int y) {
         if (x >= 0 && x < MAP_SIZE && y >= 0 && y < MAP_SIZE) {
             return mapData[x][y];
@@ -41,7 +52,11 @@ public class GameMapManager {
         return null; // กรณีอยู่นอกขอบเขต
     }
 
-    // 4.  Type ของ value เป็น String (เอาไว้ให้ InputSensing เรียกตอนคลิกวางตึก)
+
+    /**
+     * ใช้ใน InputSensing / วางตึก
+     */
+    // 4.  Type ของ value เป็น String
     public void setTile(int x, int y, String buildingId) {
         if (x >= 0 && x < MAP_SIZE && y >= 0 && y < MAP_SIZE) {
             mapData[x][y] = buildingId;

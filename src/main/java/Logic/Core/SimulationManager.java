@@ -6,6 +6,16 @@ import Model.BaseBuilding;
 import Config.Enums.ZoneType;
 import Model.UtilityBuilding;
 
+
+/**
+ * <ul>
+ * <li>Singleton</li>
+ * <li>หัวใจหลักของการ simulation เกมสร้างเมืองนี้</li>
+ * <li>Hybrid OOP-DOD Architecture: OOP จัดการพฤติกรรมที่ซับซ้อนรายตึก (Polymorphism) และใช้ DOD (Parallel Arrays) ในการประมวลผลตัวเลขรวมของข้อมูลชุดใหญ่เพื่อประสิทธิภาพและความเร็ว</li>
+ * <li>Separation of Behavior and Data: แยกลอจิกการทำงาน (Behavior) ไว้ที่ Object ตึก และแยกข้อมูลสถิติดิบ (Raw Data) ออกมาเรียงใน Array เพื่อให้ระบบ Simulation รันคำนวณได้ไวที่สุด</li>
+ * <li>Swap and Pop: เมื่อทุบตึก ใช้วิธีสลับข้อมูลตัวสุดท้ายมาแทนที่ช่องว่าง ทั้งในฝั่ง Array ข้อมูลและ Array ของ Object</li>
+ * </ul>
+ */
 import java.util.Arrays;
 
 public class SimulationManager {
@@ -58,6 +68,13 @@ public class SimulationManager {
         currentResidents = new double[size];
     }
 
+    /**
+     * Dynamic Resizing ถูกเรียกใช้ทุกครั้งที่มีการลงทะเบียนอาคารใหม่ (Register Building)
+     * <ul>
+     * <li>Cache Friendly: Primitive Array จะเก็บข้อมูลตัวเลขเรียงติดกันใน Memory ทำให้ CPU Cache อ่านข้อมูลรวดเดียวกว่า ArrayList</li>
+     * <li>ขยายขนาดทีละ 2 เท่า</li>
+     * </ul>
+     */
     // --------------- Dynamic Resizing ---------------
     private void ensureCapacity() {
         if (currentCount >= currentCapacity) {
@@ -84,6 +101,9 @@ public class SimulationManager {
     }
 
     // --------------- Register Every Building ---------------
+    /**
+     * เรียกใช้เมื่อมีการ construct building เพื่อ register เข้าระบบกลาง
+     */
     public void registerBuilding(BaseBuilding b) {
         ensureCapacity();
 
@@ -114,6 +134,9 @@ public class SimulationManager {
         currentCount++;
     }
 
+    /**
+     * เรียกใช้เมื่อมีการ upgrade building เพื่อ update ข้อมูล Array แต่ละตัว
+     */
     // --------------- Update Building Data (When Upgrade) ---------------
     public void updateBuildingData(BaseBuilding b) {
         int index = b.getDataIndex();
@@ -144,6 +167,9 @@ public class SimulationManager {
         GridDirtyFlag.getInstance().makeGridDirty();
     }
 
+    /**
+     * เรียกใช้เมื่อมีการ destruct building เพื่อ ลบข้อมูลตึกและทำการ swap and pop
+     */
     // --------------- Remove Building ---------------
     public void removeBuilding(int indexToRemove) {
         if (indexToRemove < 0 || indexToRemove >= currentCount) return;
@@ -198,6 +224,9 @@ public class SimulationManager {
         currentCount--;
     }
 
+    /**
+     * Add on removeBuilding() เพื่อไว้เรียกใช้ที่ InputSensing เมื่อมีการทุบตึกที่ตำแหน่งนั้นๆ
+     */
     // --------------- Remove Building By Position (x,y) ---------------
     public void removeBuildingAt(int gridX, int gridY) {
         for (int i = 0; i < currentCount; i++) {
@@ -206,13 +235,16 @@ public class SimulationManager {
             if (b != null && b.getGridX() == gridX && b.getGridY() == gridY) {
 
                 removeBuilding(i);
-                System.out.println("🗑️ Demolished building at [" + gridX + "," + gridY + "] (Index: " + i + ")");
+                System.out.println("Demolished building at [" + gridX + "," + gridY + "] (Index: " + i + ")");
                 return;
             }
         }
-        System.out.println("⚠️ No building found at [" + gridX + "," + gridY + "] to demolish.");
+        System.out.println("No building found at [" + gridX + "," + gridY + "] to demolish.");
     }
 
+    /**
+     * เรียกใช้เมื่อมีการ construct building เพื่อเช็คว่าสร้างได้ไหม ก่อนสร้างจริง
+     */
     public boolean canConstruct(BaseBuilding b) {
         CityMasterStats stats = CityMasterStats.getInstance();
         // 1. เช็คเงิน
@@ -228,6 +260,9 @@ public class SimulationManager {
         return true;
     }
 
+    /**
+     * Add on registerBuilding() เพื่อไว้เรียกใช้ที่ InputSensing เมื่อมีการสร้างตึก
+     */
     public void construct(BaseBuilding b) {
         CityMasterStats stats = CityMasterStats.getInstance();
         // หักเงิน
@@ -237,17 +272,28 @@ public class SimulationManager {
         registerBuilding(b);
     }
 
+
+    /**
+     * หัวใจหลักของระบบ Simulation (Main Loop) ถูกเรียกทำงานทุกๆ 1 Tick
+     * <p><b>หมายเหตุ: ลอจิกปัจจุบันเป็นการวางโครงสร้างพื้นฐานเพื่อสาธิต Data Flow ซึ่งออกแบบสถาปัตยกรรมไว้ให้รองรับ Future Enhancement ได้ทันที</b></p>
+     * * <p>Execution Pipeline (ลำดับการทำงาน):</p>
+     * <ul>
+     * <li>1. OOP Processing: วนลูปเรียก onTick() ให้แต่ละตึกจัดการลอจิกเฉพาะตัว</li>
+     * <li>2. Grid Optimization: เช็ค GridDirtyFlag เพื่ออัปเดตโครงข่ายน้ำไฟเฉพาะเวลาที่แมพมีการเปลี่ยนแปลง</li>
+     * <li>3. DOD Processing: รันลูปคำนวณและรวมค่าจาก Array (ข้ามตึกที่ปิดใช้งาน) พร้อมแยกหมวดหมู่ตาม ZoneType</li>
+     * <li>4. Data Pipeline: ส่งตัวเลขที่รวบรวมได้ ไหลไปตามท่อของ StatsManager แต่ละฝ่ายตามลำดับ (Infrastructure -> Environment -> Social -> Finance -> Population)</li>
+     * </ul>
+     */
     // --------------- Main Update Loop ---------------
-
     public void update() {
-
+        // OOP Loop
         for (int i = 0; i < currentCount; i++) {
             if (buildingRefs[i] != null) {
                 buildingRefs[i].onTick(GameManager.getInstance().getCurrentTick());
             }
         }
 
-        // -------------------- Calculate If GridDirty --------------------
+        // GridDirtyCheck
         GridDirtyFlag.getInstance().updateIfGridDirty();
 
         // ตัวแปรเก็บ Raw Data
@@ -262,7 +308,7 @@ public class SimulationManager {
         double rawResTax = 0, rawComTax = 0, rawIndTax = 0, rawAgrTax = 0;
         double rawResMaint = 0, rawComMaint = 0, rawIndMaint = 0, rawAgrMaint = 0, rawOtherMaint = 0;
 
-        // 1. DOD Loop
+        // DOD Loop
         for (int i = 0; i < currentCount; i++) {
             if (!isOperational[i]) {
                 happinessLevels[i] = 0;
@@ -316,7 +362,7 @@ public class SimulationManager {
             }
         }
 
-        // 2. Data Pipeline: ส่ง Data ดิบไปให้ Manager แต่ละส่วน
+        // Data Pipeline: ส่ง Data ดิบไปให้ Manager แต่ละส่วน
 
         // แผนกที่ 1: ตรวจสอบน้ำ/ไฟ ว่าพอเลี้ยงเมืองไหม
         StatsManagerInfrastructure.getInstance().processTick(totalPowerDemand, totalWaterDemand, totalFoodDemand, totalPowerSupply, totalWaterSupply, totalFoodSupply);
@@ -337,7 +383,7 @@ public class SimulationManager {
         // แผนกที่ 5: คน (ความต้องการคนเข้าอยู่ อิงจากความสุข)
         StatsManagerPopulation.getInstance().processTick(totalMaxPop);
 
-        // 4. เดินหน้าเวลาไป 1 Tick
+        // เดินหน้าเวลาไป 1 Tick
         GameManager.getInstance().advanceTick();
     }
 

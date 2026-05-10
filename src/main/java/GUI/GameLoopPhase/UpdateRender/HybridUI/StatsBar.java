@@ -49,21 +49,18 @@ public class StatsBar {
         detailsBox.setPadding(new Insets(15, 0, 15, 0));
         detailsBox.setPickOnBounds(false);
 
-        // =======================================================
-        // 🚀 โค้ดสั้นลงมหาศาลด้วย Helper Methods!
-        // =======================================================
 
-        // 💰 1. การเงิน
+        // 1. การเงิน
         lblMoneyVal = createLabel("💰 $0");
         lblMoneyNet = createLabel("(+0)");
         addStatRow("💰", iconBar, detailsBox, glassStyle, lblMoneyVal, lblMoneyNet);
 
-        // 👥 2. ประชากร
+        // 2. ประชากร
         lblPopVal = createLabel("👥 Pop: 0");
         lblPopNet = createLabel("(+0)");
         addStatRow("👥", iconBar, detailsBox, glassStyle, lblPopVal, lblPopNet);
 
-        // 😊 3. ความสุข
+        // 3. ความสุข
         pbHappy = new ProgressBar(0.0);
         pbHappy.setPrefSize(100, 15);
         tooltipHappy = new Tooltip("Happiness: 0%");
@@ -72,38 +69,36 @@ public class StatsBar {
         Tooltip.install(pbHappy, tooltipHappy);
         addStatRow("😊", iconBar, detailsBox, glassStyle, createLabel("😊 "), pbHappy);
 
-        // ⚡ 4. พลังงาน
+        // 4. พลังงาน
         lblPowerVal = createLabel("⚡ 0 / 0");
         addStatRow("⚡", iconBar, detailsBox, glassStyle, lblPowerVal);
 
-        // 💧 5. น้ำ
+        // 5. น้ำ
         lblWaterVal = createLabel("💧 0 / 0");
         addStatRow("💧", iconBar, detailsBox, glassStyle, lblWaterVal);
 
-        // 🌾 6. อาหาร
+        // 6. อาหาร
         lblFoodVal = createLabel("🌾 0 / 0");
         addStatRow("🌾", iconBar, detailsBox, glassStyle, lblFoodVal);
 
-        // ☣️ 7. มลพิษ
+        // 7. มลพิษ
         lblPollutionVal = createLabel("☣️ Total: 0");
         addStatRow("☣️", iconBar, detailsBox, glassStyle, lblPollutionVal);
 
-        // 🎓 8. การศึกษา
+        // 8. การศึกษา
         lblEduVal = createLabel("🎓 N:0 | B:0 | V:0 | G:0");
         Tooltip tEdu = new Tooltip("Non-Edu | Basic | Vocational | Graduate");
         tEdu.setStyle("-fx-font-size: 14px;");
         Tooltip.install(lblEduVal, tEdu);
         addStatRow("🎓", iconBar, detailsBox, glassStyle, lblEduVal);
 
-        // =======================================================
         root.getChildren().addAll(detailsBox, iconBar);
         update();
         return root;
     }
 
-    // =========================================================================
-    // 🛠️ Helper Methods (ตัวช่วยลดบรรทัดซ้ำ)
-    // =========================================================================
+
+    // Helper Methods (ตัวช่วยลดบรรทัดซ้ำ)
 
     // สร้าง Label แบบกำหนด Style ไว้แล้ว
     private static Label createLabel(String text) {
@@ -112,7 +107,7 @@ public class StatsBar {
         return lbl;
     }
 
-    // พระเอกของเรา! จัดการสร้างกล่อง, ปุ่ม, ผูก Action และยัดลงจอให้เสร็จสรรพ
+    // จัดการสร้างกล่อง, ปุ่ม, ผูก Action และยัดลงจอ
     private static void addStatRow(String iconText, VBox iconBar, VBox detailsBox, String style, Node... elements) {
         // 1. สร้างกล่องรายละเอียด
         HBox box = new HBox(8);
@@ -139,9 +134,8 @@ public class StatsBar {
         detailsBox.getChildren().add(box);
     }
 
-    // =========================================================================
-    // 🚀 ระบบอัปเดตข้อมูลแบบ Real-time (โค้ด update เหมือนเดิมเป๊ะครับ)
-    // =========================================================================
+
+    // ระบบอัปเดตข้อมูลแบบ Real-time
     public static void update() {
         CityMasterStats stats = CityMasterStats.getInstance();
 

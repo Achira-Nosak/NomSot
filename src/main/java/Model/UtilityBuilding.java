@@ -4,6 +4,15 @@ import Config.Enums.ZoneType;
 import Logic.Core.AuraMapManager;
 import Logic.Core.SimulationManager;
 
+/**
+ * คลาสอาคารสาธารณูปโภค (เช่น โรงไฟฟ้า โรงประปา เกษตรกรรม)
+ * <p>Prototype Note: ลอจิกปัจจุบันเป็นการสาธิตระบบความเสื่อมโทรมเบื้องต้น โครงสร้างถูกออกแบบมาเพื่อรองรับ Future Enhancement เช่น ระบบเรียกช่างซ่อมบำรุง หรือผลกระทบจากภัยพิบัติ</p>
+ * <p><b>Architecture:</b></p>
+ * <ul>
+ * <li>Inheritance: สืบทอดคุณสมบัติพื้นฐานมาจาก BaseBuilding</li>
+ * <li>Multiple Interfaces: ทำ Implements IResourceProducer และ IAuraProvider</li>
+ * </ul>
+ */
 public class UtilityBuilding extends BaseBuilding implements IResourceProducer, IAuraProvider {
 
     private double currentPowerProduction;
@@ -24,6 +33,17 @@ public class UtilityBuilding extends BaseBuilding implements IResourceProducer, 
         }
     }
 
+
+    /**
+     * <ul>
+     * <li>Polymorphism: ถูกเรียกใช้งานพร้อมกับตึกอื่นๆ ใน SimulationManager ผ่าน BaseReference
+     * ทำให้สั่งรัน onTick ได้ทันทีโดยไม่ต้องเขียน if-else แยกประเภทตึก</li>
+     * <li>Optimization: ใช้ลอจิก (currentTick + dataIndex) % 60 เพื่อกระจายคิว
+     * ให้ตึกแต่ละหลังทยอยประมวลผลไม่พร้อมกัน ช่วยลดภาระ CPU และป้องกันเกมกระตุก</li>
+     * <li>Prototype Logic: สาธิตระบบเสื่อมโทรม และลด efficiency ไปตามเวลา แบบขั้นบันได
+     * เป็นโครงสร้างพื้นฐานที่เตรียมไว้รองรับฟีเจอร์ เช่น การซ่อมบำรุง ในอนาคต</li>
+     * </ul>
+     */
     @Override
     public void onTick(long currentTick) {
         // คำนวณความเสื่อมโทรมทุกๆ 60 Tick
@@ -55,6 +75,10 @@ public class UtilityBuilding extends BaseBuilding implements IResourceProducer, 
         }
     }
 
+
+    /**
+     * สาธิตการทำงานผ่าน Interface IResourceProducer เพื่อคำนวณการกระจายทรัพยากรลงบน Grid แผนที่ ถ้าอันไหน > 0
+     */
     @Override
     public void produceResources(boolean[][] powerMap, boolean[][] waterMap) {
         int bx = getGridX();
@@ -62,7 +86,6 @@ public class UtilityBuilding extends BaseBuilding implements IResourceProducer, 
         int radius = (int) getStats().getServiceRadius();
         int mapSize = powerMap.length;
 
-        // 🌟 โชว์ Polymorphism: ตึกผลิตอะไร ก็ระบายสีอันนั้น
         if (this.currentPowerProduction > 0) {
             paintResourceRadius(powerMap, bx, by, radius, mapSize);
         }
@@ -71,6 +94,9 @@ public class UtilityBuilding extends BaseBuilding implements IResourceProducer, 
         }
     }
 
+    /**
+     * สาธิต Helper Method เบื้องต้นสำหรับระบายการครอบคลุมของทรัพยากร โดยเก็บในรูปแบบ boolean[x][y] ว่ามีหรือไม่
+     */
     private void paintResourceRadius(boolean[][] map, int cx, int cy, int radius, int mapSize) {
         int startX = Math.max(0, cx - radius);
         int endX = Math.min(mapSize - 1, cx + radius);
@@ -84,12 +110,18 @@ public class UtilityBuilding extends BaseBuilding implements IResourceProducer, 
         }
     }
 
+    /**
+     * โครงสร้างรองรับระบบ Network หรือ Road ในอนาคต
+     */
     @Override
     public boolean isNetworkConnected() {
         return true; // ลอจิกเช็คถนน/สายไฟ
     }
 
 
+    /**
+     * สาธิตการประยุกต์ใช้ Polymorphism ผ่าน Interface เพื่อประมวลผลข้อมูลเชิงพื้นที่ โดยเรียกใช้ helper method AuraMapManager.paintGradientAura()
+     */
     @Override
     public void applyAuraToSurroundings(AuraMapManager manager) {
         if (getStats().getPollutionIntensity() > 0) {

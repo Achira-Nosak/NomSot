@@ -7,6 +7,10 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.util.Map;
 
+/**
+ * Class สำหรับดึงข้อมูล ฺBuilding_Config.json มา Map กับ BuildingData เก็บไว้ใน registry
+ * registry เรียกใช้เพื่อดึงชุดข้อมูล BaseData ของตึก ID นั้นๆ
+ */
 public class ConfigLoader {
     private static Map<String, BuildingData> registry;
 
@@ -14,6 +18,14 @@ public class ConfigLoader {
         loadConfig();
     }
 
+
+    /**
+     * <ul>
+     * <li>Library : Gson (Google)</li>
+     * <li>ใช้ InputStream ดึงข้อมูล</li>
+     * </ul>
+     * บอก Gson ว่าจะ Map<String, BuildingData> จากข้อมูลจาก InputStream
+     */
     public static void loadConfig() {
         try {
             // อ่านไฟล์จากโฟลเดอร์ resources

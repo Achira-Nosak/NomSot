@@ -2,7 +2,7 @@ package GUI.GameLoopPhase.UpdateRender.HybridUI;
 
 import Config.BuildingData;
 import Config.ConfigLoader;
-import GUI.GUIServices.AssetManager; // ⭐️ อย่าลืม import
+import GUI.GUIServices.AssetManager;
 import GUI.GameLoopPhase.UpdateLogic.InputSensing;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -11,8 +11,8 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
 import javafx.scene.effect.DropShadow;
-import javafx.scene.image.Image;       // ⭐️ อย่าลืม import
-import javafx.scene.image.ImageView;   // ⭐️ อย่าลืม import
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Region;
@@ -73,7 +73,7 @@ public class BuildBar {
             categorizedBuildings.get(tag).add(data);
         }
 
-        // 🚀 สร้างปุ่มหมวดหมู่หลัก (ใช้ Emoji เหมือนเดิม)
+        // สร้างปุ่มหมวดหมู่หลัก (ใช้ Emoji เหมือนเดิม)
         for (String category : categorizedBuildings.keySet()) {
             String icon = getCategoryEmoji(category);
 
@@ -87,10 +87,10 @@ public class BuildBar {
                     List<BuildingData> buildings = categorizedBuildings.get(category);
 
                     for (BuildingData bData : buildings) {
-                        // ⭐️ 1. ดึงรูปภาพจาก AssetManager
+                        // 1. ดึงรูปภาพจาก AssetManager
                         Image buildingImage = AssetManager.getInstance().getImage(bData.getId());
 
-                        // ⭐️ 2. ส่งรูปไปสร้างเป็นปุ่ม (ถ้าไม่มีรูป จะใช้อักษรตัวแรกแทน)
+                        // 2. ส่งรูปไปสร้างเป็นปุ่ม (ถ้าไม่มีรูป จะใช้อักษรตัวแรกแทน)
                         String fallbackText = bData.getName().substring(0, 1);
                         Button btnBuild = createImageButton(buildingImage, fallbackText, ev -> InputSensing.setBuildMode(bData.getId()));
 
@@ -126,9 +126,8 @@ public class BuildBar {
         return root;
     }
 
-    // =========================================================================
-    // 🎨 Helper Methods สำหรับสร้างปุ่ม
-    // =========================================================================
+
+    // Helper Methods สำหรับสร้างปุ่ม
 
     // 1. สร้างปุ่มแบบมีรูปภาพ (สำหรับตึก)
     private static Button createImageButton(Image img, String fallbackText, EventHandler<ActionEvent> action) {
@@ -145,7 +144,7 @@ public class BuildBar {
 
             btn.setGraphic(view); // แปะรูปลงปุ่ม
         } else {
-            // กันเหนียว: ถ้าตึกไหนลืมใส่รูป ให้กลับไปโชว์ตัวหนังสือ
+            // กันเหนียว ถ้าตึกไหนลืมใส่รูป ให้กลับไปโชว์ตัวหนังสือ
             btn.setText(fallbackText);
             btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 24px; -fx-cursor: hand;");
         }

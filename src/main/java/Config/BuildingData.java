@@ -2,6 +2,9 @@ package Config;
 
 import javafx.scene.paint.Color;
 
+/**
+ * Frame Base ข้อมูลของ Building แต่ละอัน จะถูกเอาไปใช้ merge ตรง ConfigLoader
+ */
 public class BuildingData {
     // Basic Info
     private String id;

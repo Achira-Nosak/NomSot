@@ -1,5 +1,13 @@
 package Logic.Stats;
 
+
+/**
+ * <ul>
+ * <li>Singleton</li>
+ * <li>จัดการ logic และ Stat ทั้งหมดที่เกี่ยวกับ Infrastructure ของเกม</li>
+ * <li>Class นี้ถูกเรียกใช้โดย SimulationManager</li>
+ * </ul>
+ */
 public class StatsManagerInfrastructure {
     private static StatsManagerInfrastructure instance;
 
@@ -12,7 +20,23 @@ public class StatsManagerInfrastructure {
         return instance;
     }
 
-
+    /**
+     * จัดการ Logic และ Stat (Infrastructure) ของเกมในแต่ละ Tick
+     * <p><b>Logic Overview:</b>
+     * <ul>
+     * <li>สาธิตการคำนวณ Power Water Food (Demand/Supply) เบื้องต้น</li>
+     * </ul>
+     * * <p><b>Future Enhancement:</b>
+     * <ul>
+     * <li>เพิ่มระบบตรวจสอบสถานะวิกฤติ (Infrastructure Crisis)</li>
+     * </ul>
+     * * @param totalPowerDemand
+     * @param totalWaterDemand
+     * @param totalFoodDemand
+     * @param totalPowerSupply
+     * @param totalWaterSupply
+     * @param totalFoodSupply
+     */
     public void processTick(double totalPowerDemand, double totalWaterDemand, double totalFoodDemand,
                             double totalPowerSupply, double totalWaterSupply, double totalFoodSupply) {
 
@@ -36,7 +60,7 @@ public class StatsManagerInfrastructure {
 
         if (isBlackout) {
             // อนาคต: แอบไปบอก StatsManagerSocial ว่าไฟดับนะ ให้ลดความสุขชาวเมืองลงด่วน!
-            // System.out.println("⚠️ ภาวะวิกฤติ: ไฟฟ้าดับทั้งเมือง!");
+            // System.out.println("ภาวะวิกฤติ: ไฟฟ้าดับทั้งเมือง!");
         }
     }
 }

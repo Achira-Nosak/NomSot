@@ -64,7 +64,6 @@ public class InputSensing {
     }
 
     // เมธอดคำนวณ Isometric แบบใช้ซ้ำได้
-    // ========================================================
     private static int[] getGridCoords(double mouseX, double mouseY, double screenWidth) {
         double camX = CameraManager.getInstance().getX();
         double camY = CameraManager.getInstance().getY();
@@ -83,7 +82,6 @@ public class InputSensing {
 
 
     // จัดการ Event เมาส์
-    // ========================================================
     private static void handleMouseMove(MouseEvent event, Canvas canvas) {
         int[] coords = getGridCoords(event.getX(), event.getY(), canvas.getWidth());
         hoverGridX = coords[0];

@@ -41,7 +41,7 @@ public class LayerBackground {
         Image grassTile = AssetManager.getInstance().getImage("grass_tile");
 
         // SMART CULLING
-        // =========================================================
+        // ---------------------------------------------------------
 
         int centerGridX = (int) Math.floor(((camX) / halfWidth + camY / halfHeight) / 2.0);
         int centerGridY = (int) Math.floor((camY / halfHeight - (camX) / halfWidth) / 2.0);
@@ -54,7 +54,7 @@ public class LayerBackground {
         int startY = Math.max(0, centerGridY - viewDistY);
         int endY = Math.min(mapSize, centerGridY + viewDistY);
 
-        // =========================================================
+        // ---------------------------------------------------------
 
         boolean isEditMode = (InputSensing.getCurrentMode() == InputSensing.MODE_BUILD
                 || InputSensing.getCurrentMode() == InputSensing.MODE_DEMOLISH);
@@ -81,11 +81,10 @@ public class LayerBackground {
 
 
                 // 1. วาดพื้นดิน (หญ้า น้ำ)
-                // =========================================================
                 int terrainType = TerrainMapManager.getInstance().getTerrainAt(x, y);
 
                 if (terrainType == TerrainMapManager.TERRAIN_WATER && waterTile != null) {
-                    // วาดน้ำ ฃ
+                    // วาดน้ำ
                     gc.drawImage(waterTile, drawX - halfWidth, drawY, tileSize, tileSize);
                 }
                 else if (terrainType == TerrainMapManager.TERRAIN_GRASS && grassTile != null) {
@@ -107,7 +106,6 @@ public class LayerBackground {
 
 
                 // 2. วาดตึก (ซ้อนทับบนพื้นดินอีกที)
-                // =========================================================
                 String buildingId = GameMapManager.getInstance().getBuildingIdAt(x, y);
                 BuildingData config = ConfigLoader.getBuildingConfig(buildingId);
 
@@ -133,7 +131,6 @@ public class LayerBackground {
                 }
 
                 // 3. ระบบวาด Preview
-                // =========================================================
                 if (x == InputSensing.getHoverGridX() && y == InputSensing.getHoverGridY()) {
                     if (InputSensing.getCurrentMode() == InputSensing.MODE_BUILD) {
                         String previewId = InputSensing.getSelectedBuildingId();

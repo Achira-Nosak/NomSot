@@ -23,9 +23,8 @@ public class TerrainMapManager {
         return instance;
     }
 
-    // ==========================================
+
     // 1. LOGIC: สร้างแผนที่ (ดึงขนาดจาก ObjectMapManager อัตโนมัติ)
-    // ==========================================
     public void initMap() {
         this.mapSize = GameMapManager.getInstance().getMapSize();
         this.terrainMap = new int[mapSize][mapSize];
@@ -43,11 +42,11 @@ public class TerrainMapManager {
 
     private void generateRiver() {
         Random rand = new Random();
-        // สุ่มจุดเกิดแม่น้ำให้อยู่ช่วงกลางๆ ของแผนที่
+        // สุ่มจุดเกิดแม่น้ำให้อยู่ช่วงบนของแผนที่ก่อน
         int currentX = 5 + rand.nextInt(10);
         int riverWidth = 5;
 
-        System.out.println("🌊 River started at X: " + currentX);
+//        System.out.println("River started at X: " + currentX);
 
         for (int y = 0; y < mapSize; y++) {
             // โอกาสหักเลี้ยว 30%
@@ -63,9 +62,8 @@ public class TerrainMapManager {
         }
     }
 
-    // ==========================================
+
     // 2. GETTERS (สำหรับให้ LayerBackground หรือระบบวางตึกเรียกใช้)
-    // ==========================================
     public int getTerrainAt(int x, int y) {
         if (x >= 0 && x < mapSize && y >= 0 && y < mapSize) {
             return terrainMap[x][y];

@@ -1,9 +1,18 @@
 package Logic.Core;
 
 import Model.BaseBuilding;
-import Model.IAuraProvider;
 import Model.IResourceProducer;
 
+
+/**
+ * <ul>
+ * <li>Singleton</li>
+ * <li>Dirty Flag Pattern: เทคนิคเกมเพื่อเช็คสถานะการเปลี่ยนแปลงของข้อมูล</li>
+ * <li>Optimization: ลดภาระและป้องกันการคำนวณซ้ำซ้อนในทุกเฟรมโดยไม่จำเป็น</li>
+ * <li>Triggered : สั่งคำนวณใหม่เมื่อมีการ วางตึก, ทุบตึก, อัปเกรดตึก เท่านั้น</li>
+ * <li>Class นี้ถูกเรียกใช้ใน simulationManager</li>
+ * </ul>
+ */
 public class GridDirtyFlag {
     private static GridDirtyFlag instance;
     private boolean isGridDirty = true;
@@ -23,10 +32,27 @@ public class GridDirtyFlag {
     public boolean[][] getPowerMap() { return powerMap; }
     public boolean[][] getWaterMap() { return waterMap; }
 
+
+    /**
+     * เรียกใช้เมื่อมีการ วางตึก, ทุบตึก, อัปเกรดตึก
+     */
     public void makeGridDirty() {
         this.isGridDirty = true;
     }
 
+    /**
+     * Main Method เรียกใช้ใน simulationManager เมื่อ Grid Change
+     * <p><b>Logic Overview:</b>
+     * <ul>
+     * <li>ล้างแผนที่น้ำไฟ ให้ตึกที่ IResourceProvider เรียก produceResorce() Map รัศมีน้ำไฟ เบื้องต้น</li>
+     * <li>สั่ง AuraMapManager ให้คำนวณ IntensityMap แต่ละ Stat ของเมืองใหม่ ให้เป็นปัจจุบัน</li>
+     * <li>เช็คตึกทุกหลัง ว่าจุดที่ตั้งอยู่มีน้ำไฟเข้าถึงมั้ย ถ้าไม่มีก็สั่งหยุดทำงาน (Operational = false)</li>
+     * </ul>
+     * * <p><b>Future Enhancement:</b>
+     * <ul>
+     * <li>พัฒนาระบบการลากสายไฟและท่อน้ำจริงๆ (Network System)</li>
+     * </ul>
+     */
     public void updateIfGridDirty() {
         if (!this.isGridDirty) return;
 
