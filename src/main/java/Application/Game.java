@@ -5,12 +5,11 @@ import GUI.GUIServices.CameraManager;
 import GUI.GameLoopPhase.UpdateLogic.InputSensing;
 import GUI.GameLoopPhase.UpdateRender.HybridUI.DateTimeBar;
 import GUI.GameLoopPhase.UpdateRender.HybridUI.StatsBar;
-import GUI.GameLoopPhase.UpdateRender.LayerBackground;
+import GUI.GameLoopPhase.UpdateRender.Render;
 import GUI.InitialPhase.InitAssetNSound;
 import GUI.InitialPhase.InitDataStructure;
 import GUI.InitialPhase.InitMap;
 import Logic.Core.SimulationManager;
-import Model.BaseBuilding;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -111,8 +110,7 @@ public class Game extends Application {
 
                 // UpdateRender
                 GUIManager.getInstance().clear(); // ล้างจอ
-                LayerBackground.render();
-//                renderWorldObject();
+                Render.render();
 
             }
         };
