@@ -9,10 +9,22 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 
+
+/**
+ * Component UI สำหรับแสดงผลวันและเวลาภายในเกม (Date and Time Overlay)
+ * <ul>
+ * <li>UI Styling: ตกแต่งหน้าตาและสีสันด้วย JavaFX CSS เพื่อทำพื้นหลังแบบโปร่งใส ขอบโค้งมน และเพิ่มเอฟเฟกต์ DropShadow</li>
+ * <li>Dynamic Layout: จัดการขนาดกล่องให้หดพอดีกับตัวอักษร (USE_PREF_SIZE) และตั้งค่า PickOnBounds(false) เพื่อป้องกันไม่ให้พื้นที่ว่างของกล่องไปบล็อกการคลิกเมาส์ของผู้เล่นบนแผนที่เกม</li>
+ * <li>Update: ออกแบบให้ทำงานสอดคล้องกับ Game Loop โดยมีเมธอด update() สำหรับดึงค่าล่าสุดจาก GameManager มาอัปเดตแบบ Real-time</li>
+ * </ul>
+ */
 public class DateTimeBar {
 
     private static Label lblTime;
 
+    /**
+     * เรียกใช้ใน GUIManager
+     */
     public static HBox create() {
         HBox root = new HBox();
         root.setAlignment(Pos.CENTER);
@@ -47,6 +59,9 @@ public class DateTimeBar {
         return root;
     }
 
+    /**
+     * เรียกใช้ใน ScheduledExecutorService simulationThread
+     */
     public static void update() {
         int month = GameManager.getInstance().getGameMonth();
         int day = GameManager.getInstance().getGameDay();

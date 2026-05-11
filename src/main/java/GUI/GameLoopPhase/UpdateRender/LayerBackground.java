@@ -12,6 +12,26 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
+
+/**
+ * Engine ประมวลผลการแสดงผลหลัก (Main Render Engine - 2.5D Isometric)
+ * <p>Prototype Note: ปัจจุบันใช้โครงสร้างการวาดแบบลูปเดียวรวด (Single-pass Bottom-up) ในอนาคตสามารถยกระดับเป็นระบบ Z-Sorting หรือ Layered Rendering เต็มรูปแบบ เพื่อรองรับตึกที่มีความสูงซ้อนทับกันหลายชั้นได้</p>
+ * * <p><b>Architecture and Algorithms:</b></p>
+ * <ul>
+ * <li>Isometric Projection: แปลงพิกัดตาราง 2D (Array x,y) ให้เป็นมุมมองเฉียง 2.5D ด้วยสมการทางคณิตศาสตร์ isoX = (x-y) และ isoY = (x+y) ทำให้ได้มุมมองเมืองแบบสมจริงมากขึ้น</li>
+ * <li>Smart Culling (Viewport Optimization): ระบบจะคำนวณจากพิกัดกล้อง (CameraManager) เพื่อหากรอบสี่เหลี่ยม (Bounding Box) ที่มองเห็นได้จริงบนจอ และสั่ง Render เฉพาะช่องนั้น (startX ถึง endX) ช่วยลดภาระ CPU/GPU</li>
+ * <li>Dynamic Scaling (Zoom System): รองรับการซูมแบบ Real-time ด้วยการคำนวณอัตราส่วน zoomFactor จาก tileSize เพื่อปรับสเกลขนาดรูปภาพ และชดเชยพิกัด Offset ของตึกให้ยืดหดสัมพันธ์กับตาราง Grid</li>
+ * </ul>
+ * * <p><b>Rendering Pipeline:</b></p>
+ * <ul>
+ * <li>Step 1: Base Terrain (พื้นดิน/น้ำ):
+ * ดึงรหัสพื้นที่จาก TerrainMapManager และดึงรูปภาพจาก AssetManager เพื่อวาดเป็นฐานชั้นล่างสุด (หาก InputSensing.MODE_BUILD จะมีการวาดเส้น Grid ลางๆ ซ้อนทับให้ด้วย)</li>
+ * <li>Step 2: World Objects (สิ่งปลูกสร้าง):
+ * ดึง ID ตึกจาก GameMapManager ทาบกับ ConfigLoader เพื่อคำนวณการยืดหด (Zoom Factor) และพิกัดออฟเซ็ต (X/Y Offset) ก่อนจะวาดรูปตึกซ้อนทับลงบนพื้นดิน</li>
+ * <li>Step 3: Interactive Overlay (ระบบพรีวิว/ทุบตึก):
+ * ดึงพิกัดเมาส์และโหมดปัจจุบันจาก InputSensing หากเป็น MODE_BUILD จะวาดภาพตึกแบบโปร่งแสง (Alpha 0.5) แต่หากเป็น MODE_DEMOLISH จะวาดกรอบสีแดงซ้อนทับบนสุดเพื่อเป็น Visual Feedback ให้ผู้เล่น</li>
+ * </ul>
+ */
 public class LayerBackground {
 
     public static void render() {
@@ -56,12 +76,14 @@ public class LayerBackground {
 
         // ---------------------------------------------------------
 
+        // RENDER
+        // ---------------------------------------------------------
         boolean isEditMode = (InputSensing.getCurrentMode() == InputSensing.MODE_BUILD
                 || InputSensing.getCurrentMode() == InputSensing.MODE_DEMOLISH);
 
         for (int y = startY; y < endY; y++) {
             for (int x = startX; x < endX; x++) {
-
+                // ISOMETRIC
                 double isoX = (x - y) * halfWidth;
                 double isoY = (x + y) * halfHeight;
 
@@ -80,7 +102,7 @@ public class LayerBackground {
                 yPoints[3] = drawY + halfHeight;
 
 
-                // 1. วาดพื้นดิน (หญ้า น้ำ)
+                // Step 1: Base Terrain (พื้นดิน/น้ำ)
                 int terrainType = TerrainMapManager.getInstance().getTerrainAt(x, y);
 
                 if (terrainType == TerrainMapManager.TERRAIN_WATER && waterTile != null) {
@@ -105,7 +127,7 @@ public class LayerBackground {
                 }
 
 
-                // 2. วาดตึก (ซ้อนทับบนพื้นดินอีกที)
+                // Step 2: World Objects (สิ่งปลูกสร้าง)
                 String buildingId = GameMapManager.getInstance().getBuildingIdAt(x, y);
                 BuildingData config = ConfigLoader.getBuildingConfig(buildingId);
 
@@ -130,7 +152,7 @@ public class LayerBackground {
                     }
                 }
 
-                // 3. ระบบวาด Preview
+                // Step 3: Interactive Overlay (ระบบพรีวิว/ทุบตึก)
                 if (x == InputSensing.getHoverGridX() && y == InputSensing.getHoverGridY()) {
                     if (InputSensing.getCurrentMode() == InputSensing.MODE_BUILD) {
                         String previewId = InputSensing.getSelectedBuildingId();
@@ -163,5 +185,6 @@ public class LayerBackground {
                 }
             }
         }
+        // ---------------------------------------------------------
     }
 }

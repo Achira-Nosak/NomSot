@@ -14,6 +14,22 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
+
+/**
+ * Component UI สรุปสถิติเมือง (Stats Bar Overlay)
+ * <p>Prototype Note: ปัจจุบันรองรับการแสดงผล Finance, Population, Happiness, Infrastructure, Environment, Education</p>
+ * <p><b>Architecture and Layout Strategies:</b></p>
+ * <ul>
+ * <li>Hierarchical Layout (HBox and VBox): โครงสร้างแบบ 2 layer จัดวางตำแหน่งชิดขอบบนขวาจอ (TOP_RIGHT)
+ * <ul>
+ * <li>Layer 1 (HBox Root) (TOP_RIGHT ของจอ):</li>
+ * <li>Layer 2 (VBox IconBar) (RIGHT ของ Root): แถบไอคอนแนวตั้ง แสดงผลตลอดเวลา (Always on) ผู้เล่นสามารถคลิกเพื่อเปิดดูรายละเอียดได้ ตกแต่งด้วย CSS Glass Effect (โปร่งแสง, ขอบมน, DropShadow)</li>
+ * <li>Layer 2 (VBox DetailBox) (LEFT ของ Root): แถบรายละเอียดเชิงลึก จะแสดงผล (Visible=true) ก็ต่อเมื่อผู้เล่นกดปุ่มที่ IconBar เท่านั้น (Toggle Visibility) ช่วยประหยัดพื้นที่หน้าจอ</li>
+ * </ul>
+ * </li>
+ * <li>UX Tooltip: ประยุกต์ใช้คลาส Tooltip เพื่อซ่อนคำอธิบายข้อมูลที่ซับซ้อน เช่น แถบความสุข (โชว์ %) และสถิติการศึกษา (โชว์ระดับการศึกษา 4 ขั้น) เพื่อไม่ให้หน้าจอรกรุงรัง</li>
+ * </ul>
+ */
 public class StatsBar {
 
     // ตัวแปรเก็บ UI
@@ -23,6 +39,10 @@ public class StatsBar {
     private static Tooltip tooltipHappy;
     private static Label lblPowerVal, lblWaterVal, lblFoodVal, lblPollutionVal, lblEduVal;
 
+
+    /**
+     * เรียกใช้ใน GUIManager
+     */
     public static HBox create() {
         HBox root = new HBox(10);
         root.setAlignment(Pos.TOP_RIGHT);
@@ -98,16 +118,18 @@ public class StatsBar {
     }
 
 
-    // Helper Methods (ตัวช่วยลดบรรทัดซ้ำ)
-
-    // สร้าง Label แบบกำหนด Style ไว้แล้ว
+    /**
+     * Helper Method ของ create() สร้าง Label แบบกำหนด Style ไว้แล้ว
+     */
     private static Label createLabel(String text) {
         Label lbl = new Label(text);
         lbl.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
         return lbl;
     }
 
-    // จัดการสร้างกล่อง, ปุ่ม, ผูก Action และยัดลงจอ
+    /**
+     * Helper Method ของ create() จัดการสร้างกล่อง, ปุ่ม, ผูก Action และยัดลงจอ
+     */
     private static void addStatRow(String iconText, VBox iconBar, VBox detailsBox, String style, Node... elements) {
         // 1. สร้างกล่องรายละเอียด
         HBox box = new HBox(8);
@@ -135,7 +157,20 @@ public class StatsBar {
     }
 
 
-    // ระบบอัปเดตข้อมูลแบบ Real-time
+    /**
+     * เรียกใช้ใน ScheduledExecutorService simulationThread
+     * <ul>
+     * <li>Data Source: ดึงตัวเลขล่าสุดจาก CityMasterStats เพื่อนำมาขึ้นจอ UI</li>
+     * <li>Visual Feedback (Color Coding): มี Logic Condition Checks เพื่อปรับสีตัวอักษรแบบไดนามิก เช่น
+     * <ul>
+     * <li>เงิน/ประชากร: ค่า Net เป็นบวก (สีเขียว), ค่า Net ติดลบ (สีแดง)</li>
+     * <li>น้ำ/ไฟ/อาหาร: ค่า Supply >= Demand (สีขาว), ขาดแคลน (สีแดง)</li>
+     * <li>มลพิษ: ปลอดภัย (สีขาว), ปานกลาง (สีเหลืองทอง), วิกฤต (สีแดง)</li>
+     * </ul>
+     * </li>
+     * <li>Dynamic Progress Bar: แปลงค่าคะแนนความสุข (0-100) ไปเป็นอัตราส่วน (0.0-1.0) สำหรับ ProgressBar พร้อมเปลี่ยนสีแถบความสุขตามระดับ (เขียว/เหลือง/แดง) และอัปเดต Tooltip แบบ Real-time</li>
+     * </ul>
+     */
     public static void update() {
         CityMasterStats stats = CityMasterStats.getInstance();
 

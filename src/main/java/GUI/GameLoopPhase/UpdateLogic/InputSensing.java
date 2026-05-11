@@ -10,35 +10,56 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 
+
+/**
+ * ศูนย์กลางจัดการคำสั่งผู้เล่น (Input Sensing)
+ * <p>Prototype Note: ปัจจุบันรองรับแค่ Mouse และออกแบบโครงสร้างไว้ 3 โหมดหลัก (Idle, Build, Demolish) ซึ่งรองรับการต่อยอดการใช้ keyboard หรือลูกเล่นโหมดอื่นๆ (เช่น Inspect) ในอนาคต</p>
+ * * <p>Architecture:</p>
+ * <ul>
+ * <li>Finite State Machine: ควบคุมพฤติกรรม Mouse ด้วยระบบ State ให้การคลิกซ้ายปุ่มเดียว สามารถให้ผลลัพธ์ที่ต่างกันได้ตามโหมดที่กำลัง Active อยู่</li>
+ * <li>Inverse Isometric Math: ใช้สมการคณิตศาสตร์ย้อนกลับเพื่อแปลงพิกัดเมาส์บนจอ (2D Flat) ให้กลายเป็นพิกัด Array บนแผนที่ (2.5D Grid) และชดเชยมุมกล้อง</li>
+ * <li>Separation of Concerns: คลาสนี้ทำหน้าที่เป็นเพียง "ผู้รับสาร" (Controller) แล้วส่งพิกัดไปให้ SimulationManager ทำหน้าที่ "ตัดสินใจ" (Logic)</li>
+ * </ul>
+ * * <p>Execution Pipeline:</p>
+ * <ul>
+ * <li>1. Initialize: SetMouse() ผูก Listener ดักจับ Event เมาส์ทั้งหมดไว้ที่ Canvas ตอนเริ่มเกม</li>
+ * <li>2. Tracking (Move): ลำเลียงพิกัดจอไปให้กล้อง (CameraManager) และแปลงเป็นพิกัด Grid เก็บไว้เพื่อทำระบบ Preview แบบ Real-time</li>
+ * <li>3. Action (Click): รับคำสั่งคลิก เช็ค State ปัจจุบัน (Idle/Build/Demolish) แล้วแจกจ่ายพิกัดไปให้ระบบหลังบ้านทำงาน (สร้างหรือทุบตึก)</li>
+ * </ul>
+ */
 public class InputSensing {
 
-    // 1. สถานะ MODE_IDLE
+    // ตัวแปรเก็บพิกัดเมาส์บนหน้าจอ (สำหรับ Camera เลื่อนจอ)
+    private static double currentScreenX = 0;
+    private static double currentScreenY = 0;
+
+    // สถานะ MODE_IDLE (สำหรับ handleGridClick)
     public static final int MODE_IDLE = 0;
     public static final int MODE_BUILD = 1;
     public static final int MODE_DEMOLISH = 2;
-
     private static int currentMode = MODE_IDLE; // เริ่มเกมมาให้เมาส์ว่าง
     private static String selectedBuildingId = "";
 
-    // 2. ตัวแปรเก็บตำแหน่ง Grid ที่เมาส์ชี้อยู่ (สำหรับ Preview)
+    // ตัวแปรเก็บตำแหน่ง Grid ที่เมาส์ชี้อยู่ (สำหรับ Preview)
     private static int hoverGridX = -1;
     private static int hoverGridY = -1;
 
+    /**
+     * เรียกใช้ครั้งเดียวใน Game Start
+     */
     public static void SetMouse() {
-        setupInput(GUIManager.getInstance().getGameCanvas());
+        Canvas canvas = GUIManager.getInstance().getGameCanvas();
 
-        GUIManager.getInstance().getScene().setOnScroll(e -> {
-            CameraManager.getInstance().handleZoom(e.getDeltaY());
-        });
+        canvas.setOnMouseClicked(event -> handleMouseClick(event, canvas));
+
+        canvas.setOnMouseMoved(event -> handleMouseMove(event, canvas));
+
+        canvas.setOnScroll(event -> CameraManager.getInstance().handleZoom(event.getDeltaY()));
     }
 
-    // --- Getters สำหรับดึงไปวาดภาพ Preview ---
-    public static int getCurrentMode() { return currentMode; }
-    public static String getSelectedBuildingId() { return selectedBuildingId; }
-    public static int getHoverGridX() { return hoverGridX; }
-    public static int getHoverGridY() { return hoverGridY; }
 
-    // --- Setters สำหรับเปลี่ยนโหมด ---
+    // CHANGE MOUSE MODE
+    // ------------------------------------------------------------------------------
     public static void setIdleMode() {
         currentMode = MODE_IDLE;
         selectedBuildingId = "";
@@ -56,14 +77,29 @@ public class InputSensing {
         selectedBuildingId = "";
         System.out.println("Mode: DEMOLISH");
     }
+    // ------------------------------------------------------------------------------
 
-    public static void setupInput(Canvas canvas) {
-        canvas.setOnMouseClicked(event -> handleMouseClick(event, canvas));
-        // 3. ดักจับตอนขยับเมาส์ เพื่ออัปเดต Hover
-        canvas.setOnMouseMoved(event -> handleMouseMove(event, canvas));
+
+    // MOUSE MOVE
+    // ------------------------------------------------------------------------------
+    /**
+     * Main MouseMove Handle
+     */
+    private static void handleMouseMove(MouseEvent event, Canvas canvas) {
+
+        // เก็บพิกัดหน้าจอล่าสุดเอาไว้
+        currentScreenX = event.getX();
+        currentScreenY = event.getY();
+
+        // คำนวณ Isometric
+        int[] coords = getGridCoords(event.getX(), event.getY(), canvas.getWidth());
+        hoverGridX = coords[0];
+        hoverGridY = coords[1];
     }
 
-    // เมธอดคำนวณ Isometric แบบใช้ซ้ำได้
+    /**
+     * Helper Method ของ handleMouseMove คำนวณ Inverse Isometric
+     */
     private static int[] getGridCoords(double mouseX, double mouseY, double screenWidth) {
         double camX = CameraManager.getInstance().getX();
         double camY = CameraManager.getInstance().getY();
@@ -79,17 +115,17 @@ public class InputSensing {
 
         return new int[]{gridX, gridY};
     }
+    // ------------------------------------------------------------------------------
 
 
-    // จัดการ Event เมาส์
-    private static void handleMouseMove(MouseEvent event, Canvas canvas) {
-        int[] coords = getGridCoords(event.getX(), event.getY(), canvas.getWidth());
-        hoverGridX = coords[0];
-        hoverGridY = coords[1];
-    }
 
+    // MOUSE CLICK
+    // ------------------------------------------------------------------------------
+    /**
+     * Main MouseClick Handle
+     */
     private static void handleMouseClick(MouseEvent event, Canvas canvas) {
-        // 4. ดักจับคลิกขวา (SECONDARY) เพื่อยกเลิกกลับไปสถานะว่าง
+        // คลิกขวา (SECONDARY) เพื่อยกเลิกกลับไปสถานะว่าง
         if (event.getButton() == MouseButton.SECONDARY) {
             setIdleMode();
             return;
@@ -107,6 +143,15 @@ public class InputSensing {
         }
     }
 
+
+    /**
+     * Helper Method ของ handleMouseClick จัดการใน mouse แต่ละโหมด
+     * <ul>
+     * <li>MODE_IDLE: </li>
+     * <li>MODE_BUILD: </li>
+     * <li>MODE_DEMOLISH: </li>
+     * </ul>
+     */
     private static void handleGridClick(int x, int y) {
         if (currentMode == MODE_IDLE) {
             return; // อนาคตค่อยเพิ่มระบบคลิกดูรายละเอียดตึก (Inspect) ตรงนี้
@@ -140,4 +185,14 @@ public class InputSensing {
             }
         }
     }
+    // ------------------------------------------------------------------------------
+
+
+    // --- Getters สำหรับดึงไปวาดภาพ Preview และดึงไปให้ CameraManager ---
+    public static int getCurrentMode() { return currentMode; }
+    public static String getSelectedBuildingId() { return selectedBuildingId; }
+    public static int getHoverGridX() { return hoverGridX; }
+    public static int getHoverGridY() { return hoverGridY; }
+    public static double getCurrentScreenX() { return currentScreenX; }
+    public static double getCurrentScreenY() { return currentScreenY; }
 }

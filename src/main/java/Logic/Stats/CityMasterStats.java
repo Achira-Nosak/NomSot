@@ -3,7 +3,7 @@ package Logic.Stats;
 
 /**
  * <ul>
- * <li>Singleton</li>
+ * <li>Singleton (Single Source of Truth)</li>
  * <li>เก็บ MainGameStat ทั้งหมดไว้ที่นี่ที่เดียวเท่านั้น</li>
  * <li>ใช้ตัวแปรแบบ private volatile เพื่อ Thread-Safe</li>
  * <li>ค่า Stat ต่างๆจะถูก set ผ่านทาง StatsManager แต่ละประเภทหรือผ่านทาง Method onTick Building ได้เท่านั้น</li>

@@ -24,7 +24,7 @@ public class ConfigLoader {
      * <li>Library : Gson (Google)</li>
      * <li>ใช้ InputStream ดึงข้อมูล</li>
      * </ul>
-     * บอก Gson ว่าจะ Map<String, BuildingData> จากข้อมูลจาก InputStream
+     * บอก Gson ว่าจะ Map(String, BuildingData) จากข้อมูลจาก InputStream
      */
     public static void loadConfig() {
         try {

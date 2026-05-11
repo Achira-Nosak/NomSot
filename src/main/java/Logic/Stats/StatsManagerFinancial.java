@@ -1,5 +1,7 @@
 package Logic.Stats;
 
+import Logic.Core.GameManager;
+
 /**
  * <ul>
  * <li>Singleton</li>
@@ -77,8 +79,11 @@ public class StatsManagerFinancial {
         master.finance.setNetIncomeCurrent(netIncome);
 
         // 6. อัปเดตเงินในคลัง (Treasury)
-        double currentTreasury = master.finance.getTreasuryCurrent();
-        master.finance.setTreasuryCurrent(currentTreasury + netIncome);
+        double currentTick = GameManager.getInstance().getCurrentTick();
+        if (currentTick > 0 && currentTick % 6 == 0) {
+            double currentTreasury = master.finance.getTreasuryCurrent();
+            master.finance.setTreasuryCurrent(currentTreasury + netIncome);
+        }
 
         // 7. อัปเดตสถิติรายก้อนเพื่อให้ UI เอาไปแยกแสดงผล
         master.finance.setTaxRevenueBase(totalRevenue);

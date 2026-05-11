@@ -23,7 +23,7 @@ class BuildingDataTest {
     void testGetBaseColorInvalidHexFallback() throws Exception {
         BuildingData data = new BuildingData();
 
-        // 🌟 ใช้ Java Reflection เพื่อแอบยัดค่าตัวแปร Private (จำลองสถานการณ์ JSON อ่านไฟล์ผิด)
+        // ใช้ Java Reflection เพื่อแอบยัดค่าตัวแปร Private (จำลองสถานการณ์ JSON อ่านไฟล์ผิด)
         Field colorField = BuildingData.class.getDeclaredField("baseColorHex");
         colorField.setAccessible(true);
         colorField.set(data, "NOT_A_COLOR"); // ใส่ตัวหนังสือมั่วๆ ที่ไม่ใช่ Hex

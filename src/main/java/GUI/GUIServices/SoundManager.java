@@ -4,6 +4,14 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import java.net.URL;
 
+
+/**
+ * ระบบจัดการเสียงและดนตรีประกอบ (Audio and Background Music Manager)
+ * <ul>
+ * <li>Singleton</li>
+ * <li>GUI Service Tool: โหลดไฟล์ Media และควบคุมการ Play/Stop</li>
+ * </ul>
+ */
 public class SoundManager {
     private static SoundManager instance;
     private MediaPlayer bgmPlayer;

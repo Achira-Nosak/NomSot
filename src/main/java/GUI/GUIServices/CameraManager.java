@@ -4,12 +4,11 @@ import Logic.Core.GameMapManager;
 
 
 /**
- * ระบบจัดการมุมมองกล้องและพิกัดการแสดงผล (Camera & Viewport Manager)
+ * ระบบจัดการมุมมองกล้องและพิกัดการแสดงผล (Camera and Viewport Manager)
  * <ul>
  * <li>Singleton</li>
- * <li>GUI Service Tool: ทำหน้าที่แยกรับ Input ลอจิกการเลื่อนเมาส์และการหมุนลูกกลิ้ง (Scroll) ออกมาประมวลผลเป็นตัวเลข ก่อนจะส่งให้คลาสวาดภาพนำไปใช้ต่อ</li>
- * <li>Edge-Scrolling & Clamping: มีลอจิกเช็คพิกัดเมาส์ชนขอบจอเพื่อเลื่อนแผนที่อัตโนมัติ พร้อมประยุกต์ใช้คณิตศาสตร์ (Math.max/min) สร้าง Bounding Box กั้นไม่ให้ผู้เล่นเลื่อนจอหลุดออกนอกโลก</li>
- * <li>Prototype Note: โครงสร้างเตรียมรองรับคณิตศาสตร์สำหรับการคำนวณพิกัดแบบ 2.5D (Isometric Projection) ในอนาคตผ่านเมธอด centerOnMap</li>
+ * <li>GUI Service Tool: ทำหน้าที่แยกรับ Input ลอจิกการเลื่อนเมาส์และการ Scroll ออกมาประมวลผลเป็นตัวเลข ส่งให้คลาส Render</li>
+ * <li>Edge Scrolling: มีลอจิกเช็คพิกัดเมาส์ชนขอบจอเพื่อเลื่อนแผนที่อัตโนมัติ x = camX y = camY ให้ Render เรียกใช้</li>
  * </ul>
  */
 public class CameraManager {

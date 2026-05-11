@@ -20,12 +20,30 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Main Entry Point and Dual-Thread Game Engine
+ * <p><b>Architecture Design:</b></p>
+ * <ul>
+ * <li>Decoupled Game Loop: แยกการประมวลผลลอจิก (Simulation) ออกจากการวาดกราฟิก (Rendering) ป้องกัน UI Freezing</li>
+ * <li>Thread Safety: ใช้ Platform.runLater()</li>
+ * </ul>
+ * <p><b>Execution Pipeline:</b></p>
+ * <ul>
+ * <li>Step 1 - Initialization: Init Set Load   DataStructure, Assets, Map, GUI, InputSensing ก่อนเริ่มเกม</li>
+ * <li>Step 2 - Start Game Loops: เปิดการทำงาน 2 ระบบคู่ขนานกัน:
+ * <ul>
+ * <li>Simulation Thread (ScheduledExecutorService): รันเบื้องหลังด้วยความถี่คงที่ (Fixed Timestep) เพื่อประมวลผลระบบจำลองเมือง</li>
+ * <li>Render Loop (AnimationTimer): รันตามอัตรารีเฟรชจอ (60 FPS) เพื่ออัปเดตกล้องและวาดภาพเมือง</li>
+ * </ul>
+ * </li>
+ * </ul>
+ */
 public class Game extends Application {
-
-    private double currentMouseX, currentMouseY;
 
     @Override
     public void start(Stage primaryStage) {
+        // INITIALIZATION
+        // ------------------------------------------------------------------------------
         InitDataStructure.Init();
         InitAssetNSound.Init();
         InitMap.Init();
@@ -40,16 +58,18 @@ public class Game extends Application {
         primaryStage.show();
 
 
-        GUIManager.getInstance().getScene().setOnMouseMoved(e -> {
-            currentMouseX = e.getX();
-            currentMouseY = e.getY();
-        });
-
-
         InputSensing.SetMouse();
+        // ------------------------------------------------------------------------------
 
+
+
+
+
+        // SIMULATION THREAD
+        // ------------------------------------------------------------------------------
 
         // สร้าง Background Thread สำหรับ Simulation โดยเฉพาะ
+        // ใช้แทน new Thread เพราะตัวนี้ รักษาจังหวะ 1 วินาทีเป๊ะๆ หักลบเวลาที่ใช้ประมวลผลโค้ดให้อัตโนมัติ เวลาแม่นกว่า
         ScheduledExecutorService simulationThread = Executors.newSingleThreadScheduledExecutor();
         simulationThread.scheduleAtFixedRate(() -> {
             try {
@@ -70,14 +90,20 @@ public class Game extends Application {
         primaryStage.setOnCloseRequest(e -> {
             simulationThread.shutdown();
         });
+        // ------------------------------------------------------------------------------
 
 
+
+
+
+        // RENDER THREAD
+        // ------------------------------------------------------------------------------
         AnimationTimer gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
                 CameraManager.getInstance().update(
-                        currentMouseX,
-                        currentMouseY,
+                        InputSensing.getCurrentScreenX(),
+                        InputSensing.getCurrentScreenY(),
                         GUIManager.getInstance().getScene().getWidth(),
                         GUIManager.getInstance().getScene().getHeight()
                 );
@@ -90,10 +116,8 @@ public class Game extends Application {
 
             }
         };
-
-
-
         gameLoop.start();
+        // ------------------------------------------------------------------------------
     }
 
     public static void main(String[] args) {

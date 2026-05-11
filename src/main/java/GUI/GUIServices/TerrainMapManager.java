@@ -4,6 +4,14 @@ import Logic.Core.GameMapManager;
 
 import java.util.Random;
 
+
+/**
+ * ระบบจัดการข้อมูลภูมิประเทศและสร้างแผนที่ (Terrain Data Manager)
+ * <p>Prototype Note: สาธิตการสร้าง TerrainMap ที่มี หญ้าล้วนกับแม่น้ำแบบสุ่ม</p>
+ * <ul>
+ * <li>Singleton</li>
+ * </ul>
+ */
 public class TerrainMapManager {
     private static TerrainMapManager instance;
 
@@ -24,6 +32,9 @@ public class TerrainMapManager {
     }
 
 
+    /**
+     * สาธิตสร้างแมพเป็น grass ล้วนก่อน วาดน้ำตาม
+     */
     // 1. LOGIC: สร้างแผนที่ (ดึงขนาดจาก ObjectMapManager อัตโนมัติ)
     public void initMap() {
         this.mapSize = GameMapManager.getInstance().getMapSize();
@@ -40,6 +51,9 @@ public class TerrainMapManager {
         generateRiver();
     }
 
+    /**
+     * สาธิต generate น้ำ ตั้งให้เริ่มที่มุมซ้ายบน map ก่อน
+     */
     private void generateRiver() {
         Random rand = new Random();
         // สุ่มจุดเกิดแม่น้ำให้อยู่ช่วงบนของแผนที่ก่อน
